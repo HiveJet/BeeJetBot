@@ -82,7 +82,7 @@ namespace BeeJet.Bot.Commands.Handlers
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
                     await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
-
+                    await gameChannel.SendMessageAsync($"Welkom <@{user.Id}>");
                 }
             }
         }
@@ -96,6 +96,7 @@ namespace BeeJet.Bot.Commands.Handlers
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Inherit);
                     await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
+                    await gameChannel.SendMessageAsync($"Helaas heeft <@{user.Id}> dit channel verlaten");
                 }
             }
         }
