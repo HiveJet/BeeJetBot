@@ -1,20 +1,17 @@
-﻿using BeeJet.Bot.Commands;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.Commands.Builders;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 using System.Text;
 
 namespace BeeJet.Bot
 {
     public class BeeJetBot
     {
-        private readonly string? _clientToken = Environment.GetEnvironmentVariable("DISCORD_CLIENT_TOKEN");
-
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
-        private readonly CommandHandler _commandHandler;
         private readonly Action<string>? _logHandler;
         private readonly IServiceProvider _services;
 
@@ -38,18 +35,31 @@ namespace BeeJet.Bot
         //        .BuildServiceProvider();
         //}
 
-        public BeeJetBot()
+        private readonly string _token;
+
+        public BeeJetBot(string token)
         {
-            _client = new DiscordSocketClient();
-            _commands = new CommandService();
-            _commandHandler = new CommandHandler(_client, _commands);
+            _token = token;
+
+            var config = new DiscordSocketConfig()
+            {
+                LogLevel = LogSeverity.Info,
+                GatewayIntents = GatewayIntents.All
+            };
+
+            _client = new DiscordSocketClient(config);
+            _commands = new CommandService(new CommandServiceConfig()
+            {
+                LogLevel = LogSeverity.Info,
+                CaseSensitiveCommands = false
+            });
 
             _client.Log += Log;
+            _commands.Log += Log;
 
             _services = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
-                .AddSingleton(_commandHandler)
                 .BuildServiceProvider();
         }
 
@@ -95,22 +105,47 @@ namespace BeeJet.Bot
             await Task.CompletedTask;
         }
 
-
-
         public async Task LoginAndRun()
         {
-            await _commandHandler.InstallCommandsAsync(_services);
+            await InstallCommandsAsync();
 
-            await _client.LoginAsync(TokenType.Bot, _clientToken);
+            await _client.LoginAsync(TokenType.Bot, _token);
             await _client.StartAsync();
 
             // Block until program is closed
             await Task.Delay(-1);
         }
 
-        private Task Log(LogMessage message)
+        //private Task Log(LogMessage message)
+        //{
+        //    _logHandler?.Invoke(message.ToString());
+
+        //    return Task.CompletedTask;
+        //}
+
+        // Example of a logging handler. This can be re-used by addons
+        // that ask for a Func<LogMessage, Task>.
+        private static Task Log(LogMessage message)
         {
-            _logHandler?.Invoke(message.ToString());
+            switch (message.Severity)
+            {
+                case LogSeverity.Critical:
+                case LogSeverity.Error:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    break;
+                case LogSeverity.Warning:
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    break;
+                case LogSeverity.Info:
+                    Console.ForegroundColor = ConsoleColor.White;
+                    break;
+                case LogSeverity.Verbose:
+                case LogSeverity.Debug:
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    break;
+            }
+            Console.WriteLine($"{DateTime.Now,-19} [{message.Severity,8}] {message.Source}: {message.Message} {message.Exception}");
+            Console.ResetColor();
 
             return Task.CompletedTask;
         }
@@ -123,6 +158,42 @@ namespace BeeJet.Bot
                 sb.AppendLine($"Parameter: {parameter.Name} {parameter.Type} {(parameter.IsOptional ? " (Optional)" : "")}{(parameter.IsRemainder ? " (Remainder)" : "")}");
 
             return sb.ToString();
+        }
+
+        public async Task InstallCommandsAsync()
+        {
+            await _commands.AddModulesAsync(assembly: Assembly.GetExecutingAssembly(), services: _services);
+
+            // Hook the MessageReceived event into our command handler
+            _client.MessageReceived += HandleCommandAsync;
+        }
+
+        private async Task HandleCommandAsync(SocketMessage message)
+        {
+            // Don't process the command if it was a system message
+            if (message is not SocketUserMessage userMessage)
+                return;
+
+            // Create a number to track where the prefix ends and the command begins
+            int argPos = 0;
+
+            // Determine if the message is a command based on the prefix and make sure no bots trigger commands
+            if (!(userMessage.HasCharPrefix('!', ref argPos) ||
+                userMessage.HasMentionPrefix(_client.CurrentUser, ref argPos)) ||
+                userMessage.Author.IsBot)
+                return;
+
+            // Create a WebSocket-based command context based on the message
+            var context = new SocketCommandContext(_client, userMessage);
+
+            //var searchResult = _commands.Search(context, argPos);
+
+            // Execute the command with the command context we just
+            // created, along with the service provider for precondition checks.
+            await _commands.ExecuteAsync(
+                context: context,
+                argPos: argPos,
+                services: _services);
         }
     }
 }

@@ -6,8 +6,6 @@ namespace BeeJet.Web
 {
     public class Program
     {
-        private static BeeJet.Bot.BeeJetBot? _bot;
-
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -15,8 +13,8 @@ namespace BeeJet.Web
             // Add services to the container.
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddHostedService<BotService>();
-            //builder.Services.AddSingleton<WeatherForecastService>();
+            builder.Services.AddSingleton((serviceProvider)=> new BotService(serviceProvider.GetService<ILogger<BotService>>(), builder.Configuration["DISCORD_TOKEN"]));
+            builder.Services.AddHostedService(serviceCollection => serviceCollection.GetRequiredService<BotService>());
 
             var app = builder.Build();
 
