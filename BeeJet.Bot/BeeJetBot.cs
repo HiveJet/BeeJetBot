@@ -1,10 +1,12 @@
-﻿using Discord;
+﻿using BeeJet.Bot.Commands.Handlers;
+using Discord;
 using Discord.Commands;
 using Discord.Commands.Builders;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using System.Text;
+using System.Threading.Channels;
 
 namespace BeeJet.Bot
 {
@@ -166,6 +168,28 @@ namespace BeeJet.Bot
 
             // Hook the MessageReceived event into our command handler
             _client.MessageReceived += HandleCommandAsync;
+
+            _client.ReactionAdded += ReactionAdded;
+            _client.ButtonExecuted += ButtonPressed;
+        }
+
+        private async Task ButtonPressed(SocketMessageComponent component)
+        {
+            switch (component.Data.CustomId)
+            {
+                case GameManagementHandler.JointButtonId:
+                    await GameManagementHandler.JoinGamePressed(component.Message, component.User);
+                    break;
+                case GameManagementHandler.LeaveButtonId:
+                    await GameManagementHandler.LeaveGamePressed(component.Message, component.User);
+                    break;
+            }
+            await component.DeferAsync();
+        }
+
+        private async Task ReactionAdded(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
+        {
+
         }
 
         private async Task HandleCommandAsync(SocketMessage message)
