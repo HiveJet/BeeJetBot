@@ -1,0 +1,24 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+
+namespace BeeJet.Bot.ClientHandlers
+{
+    internal class ReactionHandler : BaseClientHandler
+    {
+        public ReactionHandler(DiscordSocketClient client, CommandService service, IServiceProvider serviceProvider)
+            : base(client, service, serviceProvider)
+        {
+        }
+
+        public Task ReactionAdded(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
+        {
+            return Task.CompletedTask;
+        }
+    }
+}

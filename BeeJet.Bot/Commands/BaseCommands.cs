@@ -1,5 +1,4 @@
-﻿using BeeJet.Bot.Commands.Handlers;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using System.Threading.Channels;
 
@@ -24,16 +23,5 @@ namespace BeeJet.Bot.Commands
             // We can also access the channel from the Command Context.
             await Context.Channel.SendMessageAsync($"{num}^2 = {Math.Pow(num, 2)}");
         }
-
-
-        [Command("Add_game")]
-        [Summary("Add gamechannel")]
-        public async Task AddGameAsync([Summary("Name of the game")] string game)
-        {
-
-            await new GameManagementHandler(Context).AddGameAsync(game);
-            
-        }
-
     }
 }
