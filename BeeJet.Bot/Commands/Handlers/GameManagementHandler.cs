@@ -70,7 +70,7 @@ namespace BeeJet.Bot.Commands.Handlers
             if (TryGetGameName(message, out string gameName))
             {
 
-                ITextChannel? gameChannel = await GetGameChannel(message, gameName);
+                ITextChannel gameChannel = await GetGameChannel(message, gameName);
                 if (gameChannel != null)
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
@@ -84,7 +84,7 @@ namespace BeeJet.Bot.Commands.Handlers
         {
             if (TryGetGameName(message, out string gameName))
             {
-                ITextChannel? gameChannel = await GetGameChannel(message, gameName);
+                ITextChannel gameChannel = await GetGameChannel(message, gameName);
                 if (gameChannel != null)
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Inherit);

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using BeeJet.Bot;
 
 namespace BeeJet.Web
 {
@@ -13,7 +12,7 @@ namespace BeeJet.Web
             // Add services to the container.
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddSingleton((serviceProvider)=> new BotService(serviceProvider.GetService<ILogger<BotService>>(), builder.Configuration["DISCORD_TOKEN"]));
+            builder.Services.AddSingleton((serviceProvider) => new BotService(serviceProvider.GetService<ILogger<BotService>>(), builder.Configuration["DISCORD_TOKEN"]));
             builder.Services.AddHostedService(serviceCollection => serviceCollection.GetRequiredService<BotService>());
 
             var app = builder.Build();
@@ -22,11 +21,8 @@ namespace BeeJet.Web
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
 
             app.UseStaticFiles();
 
