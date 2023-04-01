@@ -1,6 +1,4 @@
-﻿using Discord;
-using Discord.Commands;
-using System.Threading.Channels;
+﻿using Discord.Commands;
 
 namespace BeeJet.Bot.Commands
 {
