@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BeeJet.Bot.Extensions;
+﻿using BeeJet.Bot.Extensions;
 using Discord;
 using Discord.Commands;
 using Discord.Commands.Builders;
+using System.Text;
 
 namespace BeeJet.Bot.Commands
 {

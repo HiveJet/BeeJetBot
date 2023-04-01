@@ -1,14 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace BeeJet.Bot.Commands.Handlers
 {
@@ -103,7 +96,7 @@ namespace BeeJet.Bot.Commands.Handlers
 
         private static bool TryGetGameName(IUserMessage message, out string gameName)
         {
-            var regex = new Regex(@"Click to join channel for ([a-zA-Z\s]*)");
+            var regex = new Regex(@"Click to join channel for ([a-zA-Z0-9\s]*)");
             var matching = regex.Match(message.Content);
             if (matching.Success)
             {
