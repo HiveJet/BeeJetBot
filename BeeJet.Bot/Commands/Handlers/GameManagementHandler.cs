@@ -22,14 +22,14 @@ namespace BeeJet.Bot.Commands.Handlers
 
             if (Context.Guild.Channels.Any(b => b.Name.Equals(game, StringComparison.OrdinalIgnoreCase)))
             {
-                await Context.Channel.SendMessageAsync($"Voor deze game bestaat al een kanaal");
+                await Context.Channel.SendMessageAsync($"This game already has a channel");
                 return;
             }
 
             ulong roleId = GetAdminRoleId();
             if (!(Context.User as IGuildUser).RoleIds.Contains(roleId))
             {
-                await Context.Channel.SendMessageAsync("Voor het toevoegen van een game heb je de role 'BeeJetBotAdmin' nodig");
+                await Context.Channel.SendMessageAsync("To add a game you need the role 'BeeJetBotAdmin'");
                 return;
             }
 
@@ -38,7 +38,7 @@ namespace BeeJet.Bot.Commands.Handlers
             var channel = await Context.Guild.CreateTextChannelAsync(game.Trim().Replace(" ", "-"));
             var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Deny);
             await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, permissionOverrides);
-            await channel.SendMessageAsync($"Dit is een kanaal voor {game}");
+            await channel.SendMessageAsync($"This is the channel for {game}");
 
         }
 
@@ -75,7 +75,7 @@ namespace BeeJet.Bot.Commands.Handlers
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
                     await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
-                    await gameChannel.SendMessageAsync($"Welkom <@{user.Id}>");
+                    await gameChannel.SendMessageAsync($"Welcome <@{user.Id}>");
                 }
             }
         }
@@ -89,7 +89,7 @@ namespace BeeJet.Bot.Commands.Handlers
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Inherit);
                     await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
-                    await gameChannel.SendMessageAsync($"Helaas heeft <@{user.Id}> dit channel verlaten");
+                    await gameChannel.SendMessageAsync($"<@{user.Id}> has left the channel");
                 }
             }
         }
