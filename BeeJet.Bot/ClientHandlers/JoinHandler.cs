@@ -13,7 +13,7 @@ namespace BeeJet.Bot.ClientHandlers
 
         public async Task UserJoinedAsync(SocketGuildUser arg)
         {
-            await arg.Guild.SystemChannel.SendMessageAsync($"Welkom op de server {arg.DisplayName}");
+            await arg.Guild.SystemChannel.SendMessageAsync($"Welcome to the server {arg.DisplayName}");
         }
     }
 }
