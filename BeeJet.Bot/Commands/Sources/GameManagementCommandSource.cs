@@ -32,11 +32,11 @@ namespace BeeJet.Bot.Commands.Sources
             SocketTextChannel gameChannel = GetGameChannel(message, gameName);
             if (gameChannel != null)
             {
-                await GivePremissionToJoinChannel(user, gameChannel);
+                await GivePermissionToJoinChannel(user, gameChannel);
             }
         }
 
-        public static async Task GivePremissionToJoinChannel(SocketUser user, SocketTextChannel gameChannel)
+        public static async Task GivePermissionToJoinChannel(SocketUser user, SocketTextChannel gameChannel)
         {
             if (!gameChannel.Users.Any(b => b.Id == user.Id))
             {

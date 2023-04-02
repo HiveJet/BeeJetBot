@@ -30,7 +30,7 @@ namespace BeeJet.Bot.Commands.Sources
                 var gameName = match.Groups[1].Value;
                 var category = match.Groups[2].Value;
                 var channel = GetGameChannel(component.Message, gameName, category);
-                await GameManagementCommandSource.GivePremissionToJoinChannel(component.User, channel);
+                await GameManagementCommandSource.GivePermissionToJoinChannel(component.User, channel);
                 await component.DeferAsync(true);
             }
         }
