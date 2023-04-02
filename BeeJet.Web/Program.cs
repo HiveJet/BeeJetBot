@@ -16,7 +16,7 @@ namespace BeeJet.Web
             builder.Services.AddServerSideBlazor();
             
             
-            builder.Services.AddSingleton((serviceProvider) => new BotService(serviceProvider.GetService<ILogger<BotService>>(), serviceProvider.GetService<SteamAPIService>()));
+            builder.Services.AddSingleton((serviceProvider) => new BotService(serviceProvider.GetService<ILogger<BotService>>(), builder.Configuration));
             builder.Services.AddHostedService(serviceCollection => serviceCollection.GetRequiredService<BotService>());
 
             var app = builder.Build();

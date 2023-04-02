@@ -22,7 +22,7 @@ namespace BeeJet.Bot
         private readonly ReactionHandler _reactionHandler;
         private readonly ButtonHandler _buttonHandler;
         private readonly SlashCommandHandler _slashCommandHandler;
-        private List<ICommandSource> _commandSources;
+        private List<Type> _commandSources;
         private readonly JoinHandler _joinHandler;
 
         public BeeJetBot(IConfiguration configuration)
@@ -47,25 +47,29 @@ namespace BeeJet.Bot
             _client.Log += Log;
             _commandService.Log += Log;
 
-            _serviceProvider = new ServiceCollection()
+            var serviceCollection = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
-                .AddSingleton((serviceProvider) => new SteamAPIService(configuration["STEAM_KEY"]))
-                .BuildServiceProvider();
+                .AddSingleton((serviceProvider) => new SteamAPIService(configuration["STEAM_KEY"]));
+            foreach (var commandType in _commandSources)
+            {
+                serviceCollection.AddSingleton(commandType);
+            }
+            _serviceProvider = serviceCollection.BuildServiceProvider();
 
             _messageHandler = new MessageHandler(_client, _commandService, _serviceProvider);
             _reactionHandler = new ReactionHandler(_client, _commandService, _serviceProvider);
             _buttonHandler = new ButtonHandler(_client, _commandService, _serviceProvider);
             _joinHandler = new JoinHandler(_client, _commandService, _serviceProvider);
-            _slashCommandHandler = new SlashCommandHandler(_client, _commandService, _serviceProvider, _commandSources);
+            _slashCommandHandler = new SlashCommandHandler(_client, _commandService, _serviceProvider, _commandSources.Select(_serviceProvider.GetService).OfType<ICommandSource>().ToList());
         }
 
-        private List<ICommandSource> GetCommandSources()
+        private List<Type> GetCommandSources()
         {
             var type = typeof(ICommandSource);
             return AppDomain.CurrentDomain.GetAssemblies()
                  .SelectMany(s => s.GetTypes())
-                 .Where(p => type.IsAssignableFrom(p) && !p.IsAbstract).Select(t => (ICommandSource)Activator.CreateInstance(t)).ToList();
+                 .Where(p => type.IsAssignableFrom(p) && !p.IsAbstract).ToList();
         }
 
         public async Task InstallCommandsAsync()
@@ -86,12 +90,12 @@ namespace BeeJet.Bot
 
         private async Task OnClientReady()
         {
-            foreach (var commandSource in _commandSources)
+            foreach (var commandSource in _commandSources.Select(_serviceProvider.GetService).OfType<ICommandSource>().ToList())
             {
                 var guilds = _client.Guilds.Where(b => b.Users.Any(u => u.IsBot && u.Username == "BeeJetBot"));//TODO: Maybe better way?
                 foreach (var guild in guilds)
                 {
-                   await commandSource.RegisterCommands(guild);
+                    await commandSource.RegisterCommands(guild);
                 }
             }
         }
