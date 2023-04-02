@@ -29,13 +29,13 @@ namespace BeeJet.Bot.Commands.Sources
             {
                 var gameName = match.Groups[1].Value;
                 var category = match.Groups[2].Value;
-                var channel = await GetGameChannel(component.Message, gameName, category);
+                var channel = GetGameChannel(component.Message, gameName, category);
                 await GameManagementCommandSource.GivePremissionToJoinChannel(component.User, channel);
                 await component.DeferAsync(true);
             }
         }
 
-        private static async Task<SocketTextChannel> GetGameChannel(IUserMessage message, string gameName, string categoryName)
+        private static SocketTextChannel GetGameChannel(IUserMessage message, string gameName, string categoryName)
         {
             var textChannels = ((SocketTextChannel)message.Channel).Guild.Channels.OfType<SocketTextChannel>();
             var gameChannel = textChannels.FirstOrDefault(b => b.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && b.Category.Name == categoryName.Replace("-", " "));

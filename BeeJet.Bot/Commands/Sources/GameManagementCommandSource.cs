@@ -29,7 +29,7 @@ namespace BeeJet.Bot.Commands.Sources
 
         private static async Task JoinGameAsync(IUserMessage message, SocketUser user, string gameName)
         {
-            SocketTextChannel gameChannel = await GetGameChannel(message, gameName);
+            SocketTextChannel gameChannel = GetGameChannel(message, gameName);
             if (gameChannel != null)
             {
                 await GivePremissionToJoinChannel(user, gameChannel);
@@ -50,7 +50,7 @@ namespace BeeJet.Bot.Commands.Sources
         {
             if (TryGetGameName(message, out string gameName))
             {
-                ITextChannel gameChannel = await GetGameChannel(message, gameName);
+                ITextChannel gameChannel = GetGameChannel(message, gameName);
                 if (gameChannel != null)
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Inherit);
@@ -74,7 +74,7 @@ namespace BeeJet.Bot.Commands.Sources
             return false;
         }
 
-        private static async Task<SocketTextChannel> GetGameChannel(IUserMessage message, string gameName)
+        private static SocketTextChannel GetGameChannel(IUserMessage message, string gameName)
         {
             var socketMessageChannel = message.Channel as SocketTextChannel;
             var textChannels = socketMessageChannel.Guild.Channels.OfType<SocketTextChannel>();
