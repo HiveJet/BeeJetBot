@@ -18,7 +18,6 @@ namespace BeeJet.Bot
         private readonly MessageHandler _messageHandler;
         private readonly ReactionHandler _reactionHandler;
         private readonly ButtonHandler _buttonHandler;
-        private readonly JoinHandler _joinHandler;
 
         public BeeJetBot(string token)
         {
@@ -48,7 +47,6 @@ namespace BeeJet.Bot
             _messageHandler = new MessageHandler(_client, _commandService, _serviceProvider);
             _reactionHandler = new ReactionHandler(_client, _commandService, _serviceProvider);
             _buttonHandler = new ButtonHandler(_client, _commandService, _serviceProvider);
-            _joinHandler = new JoinHandler(_client, _commandService, _serviceProvider);
         }
 
         public async Task InstallCommandsAsync()
@@ -59,10 +57,9 @@ namespace BeeJet.Bot
             _client.MessageReceived += _messageHandler.HandleCommandAsync;
             _client.ReactionAdded += _reactionHandler.ReactionAdded;
             _client.ButtonExecuted += _buttonHandler.ButtonPressed;
-            _client.UserJoined += _joinHandler.UserJoinedAsync;
+
             await HelpCommands.GenerateHelpCommandAsync(_commandService);
         }
-
 
         public async Task LoginAndRun()
         {
