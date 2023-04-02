@@ -1,5 +1,6 @@
 ﻿using BeeJet.Bot.ClientHandlers;
 using BeeJet.Bot.Commands;
+using BeeJet.Bot.Commands.Sources;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -18,11 +19,15 @@ namespace BeeJet.Bot
         private readonly MessageHandler _messageHandler;
         private readonly ReactionHandler _reactionHandler;
         private readonly ButtonHandler _buttonHandler;
+        private readonly SlashCommandHandler _slashCommandHandler;
+        private List<ICommandSource> _commandSources;
         private readonly JoinHandler _joinHandler;
 
         public BeeJetBot(string token)
         {
             _token = token;
+
+            _commandSources = GetCommandSources();
 
             var config = new DiscordSocketConfig()
             {
@@ -49,6 +54,15 @@ namespace BeeJet.Bot
             _reactionHandler = new ReactionHandler(_client, _commandService, _serviceProvider);
             _buttonHandler = new ButtonHandler(_client, _commandService, _serviceProvider);
             _joinHandler = new JoinHandler(_client, _commandService, _serviceProvider);
+            _slashCommandHandler = new SlashCommandHandler(_client, _commandService, _serviceProvider, _commandSources);
+        }
+
+        private List<ICommandSource> GetCommandSources()
+        {
+            var type = typeof(ICommandSource);
+            return AppDomain.CurrentDomain.GetAssemblies()
+                 .SelectMany(s => s.GetTypes())
+                 .Where(p => type.IsAssignableFrom(p) && !p.IsAbstract).Select(t => (ICommandSource)Activator.CreateInstance(t)).ToList();
         }
 
         public async Task InstallCommandsAsync()
@@ -59,9 +73,24 @@ namespace BeeJet.Bot
             _client.MessageReceived += _messageHandler.HandleCommandAsync;
             _client.ReactionAdded += _reactionHandler.ReactionAdded;
             _client.ButtonExecuted += _buttonHandler.ButtonPressed;
+            _client.SlashCommandExecuted += _slashCommandHandler.SlashCommandExecuted;
             _client.UserJoined += _joinHandler.UserJoinedAsync;
 
             await HelpCommands.GenerateHelpCommandAsync(_commandService);
+
+            _client.Ready += OnClientReady;
+        }
+
+        private async Task OnClientReady()
+        {
+            foreach (var commandSource in _commandSources)
+            {
+                var guilds = _client.Guilds.Where(b => b.Users.Any(u => u.IsBot && u.Username == "BeeJetBot"));//TODO: Maybe better way?
+                foreach (var guild in guilds)
+                {
+                   await commandSource.RegisterCommands(guild);
+                }
+            }
         }
 
         public async Task LoginAndRun()
