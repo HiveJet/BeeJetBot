@@ -80,7 +80,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             else
             {
                 var textChannels = Guild.Channels.OfType<ITextChannel>();
-                return textChannels.SingleOrDefault(c => c.Name.Equals(GameManagementCommandSource.ChannelName, StringComparison.OrdinalIgnoreCase));
+                return textChannels.SingleOrDefault(c => c.Name.Equals(GameManagementCommandSource.ChannelName, StringComparison.OrdinalIgnoreCase) && c.CategoryId == categoryChannel.Id);
             }
         }
     }

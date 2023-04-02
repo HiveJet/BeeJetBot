@@ -8,7 +8,6 @@ namespace BeeJet.Bot.Commands.Sources
     {
         Task RegisterCommands(IGuild guild);
         string[] GetCommandNames();
-
         SlashCommandExecutedHandler GetCommandHandler(string commandName, SocketSlashCommand socketSlashCommand);
     }
 }

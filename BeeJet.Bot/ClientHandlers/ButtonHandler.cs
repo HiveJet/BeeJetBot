@@ -22,6 +22,11 @@ namespace BeeJet.Bot.ClientHandlers
                     await GameManagementCommandSource.LeaveGamePressed(component.Message, component.User);
                     break;
             }
+            if(component.Data.CustomId.StartsWith("join-game-"))
+            {
+                await SteamCommandSource.JoinGamePressed(component);
+                return;
+            }
             await component.DeferAsync();
         }
     }
