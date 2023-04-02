@@ -21,6 +21,8 @@ namespace BeeJet.Bot
         private readonly ButtonHandler _buttonHandler;
         private readonly SlashCommandHandler _slashCommandHandler;
         private List<ICommandSource> _commandSources;
+        private readonly JoinHandler _joinHandler;
+
         public BeeJetBot(string token)
         {
             _token = token;
@@ -51,6 +53,7 @@ namespace BeeJet.Bot
             _messageHandler = new MessageHandler(_client, _commandService, _serviceProvider);
             _reactionHandler = new ReactionHandler(_client, _commandService, _serviceProvider);
             _buttonHandler = new ButtonHandler(_client, _commandService, _serviceProvider);
+            _joinHandler = new JoinHandler(_client, _commandService, _serviceProvider);
             _slashCommandHandler = new SlashCommandHandler(_client, _commandService, _serviceProvider, _commandSources);
         }
 
@@ -71,6 +74,7 @@ namespace BeeJet.Bot
             _client.ReactionAdded += _reactionHandler.ReactionAdded;
             _client.ButtonExecuted += _buttonHandler.ButtonPressed;
             _client.SlashCommandExecuted += _slashCommandHandler.SlashCommandExecuted;
+            _client.UserJoined += _joinHandler.UserJoinedAsync;
 
             await HelpCommands.GenerateHelpCommandAsync(_commandService);
 
