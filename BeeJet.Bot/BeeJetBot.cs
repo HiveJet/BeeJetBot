@@ -1,5 +1,6 @@
 ﻿using BeeJet.Bot.ClientHandlers;
 using BeeJet.Bot.Commands;
+using BeeJet.Bot.Services.SteamAPI;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -20,10 +21,12 @@ namespace BeeJet.Bot
         private readonly ButtonHandler _buttonHandler;
         private readonly JoinHandler _joinHandler;
 
-        public BeeJetBot(string token)
+        public SteamAPIService SteamAPI { get; }
+
+        public BeeJetBot(string token, SteamAPIService steamAPI)
         {
             _token = token;
-
+            SteamAPI = steamAPI;
             var config = new DiscordSocketConfig()
             {
                 LogLevel = LogSeverity.Info,
