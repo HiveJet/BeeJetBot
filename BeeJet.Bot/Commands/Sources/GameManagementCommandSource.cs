@@ -23,14 +23,26 @@ namespace BeeJet.Bot.Commands.Sources
         {
             if (TryGetGameName(message, out string gameName))
             {
+                await JoinGameAsync(message, user, gameName);
+            }
+        }
 
-                ITextChannel gameChannel = await GetGameChannel(message, gameName);
-                if (gameChannel != null)
-                {
-                    var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
-                    await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
-                    await gameChannel.SendMessageAsync($"Welcome <@{user.Id}>");
-                }
+        private static async Task JoinGameAsync(IUserMessage message, SocketUser user, string gameName)
+        {
+            SocketTextChannel gameChannel = GetGameChannel(message, gameName);
+            if (gameChannel != null)
+            {
+                await GivePermissionToJoinChannel(user, gameChannel);
+            }
+        }
+
+        public static async Task GivePermissionToJoinChannel(SocketUser user, SocketTextChannel gameChannel)
+        {
+            if (!gameChannel.Users.Any(b => b.Id == user.Id))
+            {
+                var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
+                await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
+                await gameChannel.SendMessageAsync($"Welcome <@{user.Id}>");
             }
         }
 
@@ -38,7 +50,7 @@ namespace BeeJet.Bot.Commands.Sources
         {
             if (TryGetGameName(message, out string gameName))
             {
-                ITextChannel gameChannel = await GetGameChannel(message, gameName);
+                ITextChannel gameChannel = GetGameChannel(message, gameName);
                 if (gameChannel != null)
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Inherit);
@@ -62,7 +74,7 @@ namespace BeeJet.Bot.Commands.Sources
             return false;
         }
 
-        private static async Task<ITextChannel> GetGameChannel(IUserMessage message, string gameName)
+        private static SocketTextChannel GetGameChannel(IUserMessage message, string gameName)
         {
             var socketMessageChannel = message.Channel as SocketTextChannel;
             var textChannels = socketMessageChannel.Guild.Channels.OfType<SocketTextChannel>();
