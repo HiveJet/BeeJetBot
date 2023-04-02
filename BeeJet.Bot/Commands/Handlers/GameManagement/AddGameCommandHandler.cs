@@ -1,4 +1,5 @@
 ﻿using BeeJet.Bot.Commands.Sources;
+using BeeJet.Bot.Extensions;
 using Discord;
 using Discord.WebSocket;
 
@@ -25,10 +26,10 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         public async Task AddGameAsync(string game, string categoryName)
         {
-            ulong roleId = GetAdminRoleId();
+            ulong roleId = Guild.GetAdminRoleId();
             if (!(User as IGuildUser).RoleIds.Contains(roleId))
             {
-                await Context.RespondAsync("To add a game you need the role 'BeeJetBotAdmin'", ephemeral: true);
+                await Context.RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
                 return;
             }
 

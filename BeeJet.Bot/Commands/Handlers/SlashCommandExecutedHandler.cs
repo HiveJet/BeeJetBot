@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using BeeJet.Bot.Extensions;
+using Discord;
 using Discord.WebSocket;
 using System.Threading.Channels;
 
@@ -20,8 +21,6 @@ namespace BeeJet.Bot.Commands.Handlers
             Context = context;
             Channel = Context.Channel;
             User = Context.User;
-
-
         }
 
         public virtual async Task Initialize(DiscordSocketClient client)
@@ -30,24 +29,10 @@ namespace BeeJet.Bot.Commands.Handlers
             {
                 Guild = client.GetGuild(Context.GuildId.Value);
             }
-            await AddAdminRoleIfNeeded();
+            await Guild.AddAdminRoleIfNeeded();
             Client = client;
         }
 
         internal abstract Task SlashCommandExecuted();
-
-
-        protected async Task AddAdminRoleIfNeeded()
-        {
-            if (!Guild.Roles.Any(b => b.Name == "BeeJetBotAdmin"))
-            {
-                await Guild.CreateRoleAsync("BeeJetBotAdmin", isMentionable: false);
-            }
-        }
-
-        protected ulong GetAdminRoleId()
-        {
-            return Guild.Roles.FirstOrDefault(b => b.Name == "BeeJetBotAdmin").Id;
-        }
     }
 }
