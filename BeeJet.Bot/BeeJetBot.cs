@@ -1,9 +1,11 @@
 ﻿using BeeJet.Bot.ClientHandlers;
 using BeeJet.Bot.Commands;
+using BeeJet.Bot.Services;
 using BeeJet.Bot.Services.SteamAPI;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -21,12 +23,9 @@ namespace BeeJet.Bot
         private readonly ButtonHandler _buttonHandler;
         private readonly JoinHandler _joinHandler;
 
-        public SteamAPIService SteamAPI { get; }
-
-        public BeeJetBot(string token, SteamAPIService steamAPI)
+        public BeeJetBot(IConfiguration configuration)
         {
-            _token = token;
-            SteamAPI = steamAPI;
+            _token = configuration["DISCORD_TOKEN"];
             var config = new DiscordSocketConfig()
             {
                 LogLevel = LogSeverity.Info,
@@ -46,6 +45,7 @@ namespace BeeJet.Bot
             _serviceProvider = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
+                .AddSingleton((serviceProvider) => new SteamAPIService(configuration["STEAM_KEY"]))
                 .BuildServiceProvider();
 
             _messageHandler = new MessageHandler(_client, _commandService, _serviceProvider);

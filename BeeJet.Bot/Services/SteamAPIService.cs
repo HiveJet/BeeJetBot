@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BeeJet.Bot.Services.SteamAPI
+namespace BeeJet.Bot.Services
 {
     public class SteamAPIService
     {
@@ -21,7 +21,7 @@ namespace BeeJet.Bot.Services.SteamAPI
         {
             var steamInterface = _webInterfaceFactory.CreateSteamWebInterface<PlayerService>(new HttpClient());
             var playerGames = (await steamInterface.GetRecentlyPlayedGamesAsync(userId)).Data;
-            return playerGames.RecentlyPlayedGames.Select(b=> b.Name).ToArray();
+            return playerGames.RecentlyPlayedGames.Select(b => b.Name).ToArray();
         }
 
         public async Task<string[]> GetGamesFromSteamUser(ulong userId)

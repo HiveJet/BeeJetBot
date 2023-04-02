@@ -1,5 +1,5 @@
 ﻿using BeeJet.Bot;
-using BeeJet.Bot.Services.SteamAPI;
+using BeeJet.Bot.Services;
 
 namespace BeeJet.Web
 {
@@ -10,10 +10,10 @@ namespace BeeJet.Web
 
         public bool IsRunning { get; private set; }
 
-        public BotService(ILogger<BotService> logger, string clientToken, SteamAPIService steamAPI)
+        public BotService(ILogger<BotService> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _bot = new BeeJetBot(clientToken, steamAPI);
+            _bot = new BeeJetBot(configuration);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
