@@ -51,6 +51,7 @@ namespace BeeJet.Bot.Commands.Sources
         private static bool TryGetGameName(IUserMessage message, out string gameName)
         {
             var regex = new Regex(@"Click to join channel for ([a-zA-Z0-9\s]*)");
+
             var matching = regex.Match(message.Content);
             if (matching.Success)
             {
@@ -63,8 +64,9 @@ namespace BeeJet.Bot.Commands.Sources
 
         private static async Task<ITextChannel> GetGameChannel(IUserMessage message, string gameName)
         {
-            var textChannels = (await (message.Channel as IGuildChannel).Guild.GetChannelsAsync()).OfType<ITextChannel>();
-            var gameChannel = textChannels.FirstOrDefault(b => b.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase));
+            var socketMessageChannel = message.Channel as SocketTextChannel;
+            var textChannels = socketMessageChannel.Guild.Channels.OfType<SocketTextChannel>();
+            var gameChannel = textChannels.FirstOrDefault(b => b.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && b.CategoryId == socketMessageChannel.CategoryId);
             return gameChannel;
         }
 
@@ -74,7 +76,7 @@ namespace BeeJet.Bot.Commands.Sources
             guildCommand.WithName("add-game");
             guildCommand.WithDescription("Add game channel");
             guildCommand.AddOption("game", ApplicationCommandOptionType.String, "The name of the game", isRequired: true);
-            //guildCommand.AddOption("category", ApplicationCommandOptionType.String, "Add to category", isRequired: false);
+            guildCommand.AddOption("category", ApplicationCommandOptionType.String, "Add to category", isRequired: false);
             await guild.CreateApplicationCommandAsync(guildCommand.Build());
         }
 

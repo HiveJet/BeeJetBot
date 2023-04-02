@@ -13,6 +13,7 @@ namespace BeeJet.Bot.Commands.Handlers
         public ISocketMessageChannel Channel { get; set; }
 
         public SocketUser User { get; set; }
+        public DiscordSocketClient Client { get; private set; }
 
         public SlashCommandExecutedHandler(SocketSlashCommand context)
         {
@@ -29,6 +30,8 @@ namespace BeeJet.Bot.Commands.Handlers
             {
                 Guild = client.GetGuild(Context.GuildId.Value);
             }
+            await AddAdminRoleIfNeeded();
+            Client = client;
         }
 
         internal abstract Task SlashCommandExecuted();
