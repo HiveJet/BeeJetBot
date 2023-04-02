@@ -5,6 +5,7 @@ namespace BeeJet.Bot.ClientHandlers
 {
     internal class MessageHandler : BaseClientHandler
     {
+        //TODO:service provider should not be a parameter
         public MessageHandler(DiscordSocketClient client, CommandService service, IServiceProvider serviceProvider)
             : base(client, service, serviceProvider)
         {

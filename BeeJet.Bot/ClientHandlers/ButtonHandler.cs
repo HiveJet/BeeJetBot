@@ -1,4 +1,4 @@
-﻿using BeeJet.Bot.Commands.Handlers;
+﻿using BeeJet.Bot.Commands.Sources;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -15,11 +15,11 @@ namespace BeeJet.Bot.ClientHandlers
         {
             switch (component.Data.CustomId)
             {
-                case GameManagementHandler.JointButtonId:
-                    await GameManagementHandler.JoinGamePressed(component.Message, component.User);
+                case GameManagementCommandSource.JointButtonId:
+                    await GameManagementCommandSource.JoinGamePressed(component.Message, component.User);
                     break;
-                case GameManagementHandler.LeaveButtonId:
-                    await GameManagementHandler.LeaveGamePressed(component.Message, component.User);
+                case GameManagementCommandSource.LeaveButtonId:
+                    await GameManagementCommandSource.LeaveGamePressed(component.Message, component.User);
                     break;
             }
             await component.DeferAsync();
