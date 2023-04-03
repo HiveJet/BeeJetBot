@@ -22,6 +22,7 @@ namespace BeeJet.Bot.ClientHandlers
                    .Where(p => !p.IsAbstract).SelectMany(b => b.GetMethods().Select(m => (Attribute: m.GetCustomAttribute<ButtonPressedHandlerAttribute>(), Method: m)).Where(b => b.Attribute != null
                             && b.Method.IsStatic
                             && b.Method.GetParameters().Count() == 1
+                            && b.Method.ReturnType == typeof(Task)
                             && b.Method.GetParameters().FirstOrDefault()?.ParameterType == typeof(SocketMessageComponent))).ToList();
         }
 
@@ -34,7 +35,7 @@ namespace BeeJet.Bot.ClientHandlers
                     : component.Data.CustomId.Equals(handler.Attribute.CustomId, StringComparison.OrdinalIgnoreCase);
                 if (customIdMatch)
                 {
-                    handler.Method.Invoke(null, new object[] { component });
+                    await (Task)handler.Method.Invoke(null, new object[] { component });
                     await component.DeferAsync();
                     return;
                 }
