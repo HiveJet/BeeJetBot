@@ -2,6 +2,8 @@
 using BeeJet.Bot.Commands;
 using BeeJet.Bot.Services;
 using BeeJet.Bot.Commands.Sources;
+using BeeJet.Bot.Extensions;
+using BeeJet.Bot.Logging;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -13,6 +15,9 @@ namespace BeeJet.Bot
 {
     public class BeeJetBot
     {
+        public const string BOT_NAME = "BeeJetBot";
+        public const string BOT_ADMIN_ROLE_NAME = "BeeJetBotAdmin";
+
         private readonly string _token;
 
         private readonly DiscordSocketClient _client;
@@ -24,11 +29,14 @@ namespace BeeJet.Bot
         private readonly SlashCommandHandler _slashCommandHandler;
         private List<Type> _commandSources;
         private readonly JoinHandler _joinHandler;
+        private readonly DiscordLogHandler _discordLogHandler;
+        private readonly DiscordLogger _logger;
 
         public BeeJetBot(IConfiguration configuration)
         {
             _token = configuration["DISCORD_TOKEN"];
             _commandSources = GetCommandSources();
+            _logger = new DiscordLogger();
 
 
             var config = new DiscordSocketConfig()
@@ -44,12 +52,13 @@ namespace BeeJet.Bot
                 CaseSensitiveCommands = false
             });
 
-            _client.Log += Log;
-            _commandService.Log += Log;
+            _client.Log += _logger.Log;
+            _commandService.Log += _logger.Log;
 
             var serviceCollection = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
+                .AddSingleton(_logger)
                 .AddSingleton((serviceProvider) => new SteamAPIService(configuration["STEAM_KEY"]));
             foreach (var commandType in _commandSources)
             {
@@ -62,6 +71,8 @@ namespace BeeJet.Bot
             _buttonHandler = new ButtonHandler(_client, _commandService, _serviceProvider);
             _joinHandler = new JoinHandler(_client, _commandService, _serviceProvider);
             _slashCommandHandler = new SlashCommandHandler(_client, _commandService, _serviceProvider, _commandSources.Select(_serviceProvider.GetService).OfType<ICommandSource>().ToList());
+            _discordLogHandler = new DiscordLogHandler(_client);
+            _logger.BroadcastLogEvent += _discordLogHandler.OnLoggedMessage;
         }
 
         private List<Type> GetCommandSources()
@@ -92,8 +103,7 @@ namespace BeeJet.Bot
         {
             foreach (var commandSource in _commandSources.Select(_serviceProvider.GetService).OfType<ICommandSource>().ToList())
             {
-                var guilds = _client.Guilds.Where(b => b.Users.Any(u => u.IsBot && u.Username == "BeeJetBot"));//TODO: Maybe better way?
-                foreach (var guild in guilds)
+                foreach (var guild in _client.GetBotGuilds())
                 {
                     await commandSource.RegisterCommands(guild);
                 }
@@ -109,33 +119,6 @@ namespace BeeJet.Bot
 
             // Block until program is closed
             await Task.Delay(-1);
-        }
-
-        // Example of a logging handler. This can be re-used by addons
-        // that ask for a Func<LogMessage, Task>.
-        private static Task Log(LogMessage message)
-        {
-            switch (message.Severity)
-            {
-                case LogSeverity.Critical:
-                case LogSeverity.Error:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-                case LogSeverity.Warning:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
-                case LogSeverity.Info:
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
-                case LogSeverity.Verbose:
-                case LogSeverity.Debug:
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    break;
-            }
-            Console.WriteLine($"{DateTime.Now,-19} [{message.Severity,8}] {message.Source}: {message.Message} {message.Exception}");
-            Console.ResetColor();
-
-            return Task.CompletedTask;
         }
     }
 }
