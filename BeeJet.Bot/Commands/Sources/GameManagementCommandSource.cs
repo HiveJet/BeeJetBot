@@ -19,69 +19,6 @@ namespace BeeJet.Bot.Commands.Sources
 
         }
 
-        public static async Task JoinGamePressed(IUserMessage message, SocketUser user)
-        {
-            if (TryGetGameName(message, out string gameName))
-            {
-                await JoinGameAsync(message, user, gameName);
-            }
-        }
-
-        private static async Task JoinGameAsync(IUserMessage message, SocketUser user, string gameName)
-        {
-            SocketTextChannel gameChannel = GetGameChannel(message, gameName);
-            if (gameChannel != null)
-            {
-                await GivePermissionToJoinChannel(user, gameChannel);
-            }
-        }
-
-        public static async Task GivePermissionToJoinChannel(SocketUser user, SocketTextChannel gameChannel)
-        {
-            if (!gameChannel.Users.Any(b => b.Id == user.Id))
-            {
-                var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
-                await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
-                await gameChannel.SendMessageAsync($"Welcome <@{user.Id}>");
-            }
-        }
-
-        public static async Task LeaveGamePressed(IUserMessage message, SocketUser user)
-        {
-            if (TryGetGameName(message, out string gameName))
-            {
-                ITextChannel gameChannel = GetGameChannel(message, gameName);
-                if (gameChannel != null)
-                {
-                    var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Inherit);
-                    await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
-                    await gameChannel.SendMessageAsync($"<@{user.Id}> has left the channel");
-                }
-            }
-        }
-
-        private static bool TryGetGameName(IUserMessage message, out string gameName)
-        {
-            var regex = new Regex(@"Click to join channel for ([a-zA-Z0-9\s]*)");
-
-            var matching = regex.Match(message.Content);
-            if (matching.Success)
-            {
-                gameName = matching.Groups[1].Value.Trim().Replace(" ", "-");
-                return true;
-            }
-            gameName = null;
-            return false;
-        }
-
-        private static SocketTextChannel GetGameChannel(IUserMessage message, string gameName)
-        {
-            var socketMessageChannel = message.Channel as SocketTextChannel;
-            var textChannels = socketMessageChannel.Guild.Channels.OfType<SocketTextChannel>();
-            var gameChannel = textChannels.FirstOrDefault(b => b.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && b.CategoryId == socketMessageChannel.CategoryId);
-            return gameChannel;
-        }
-
         public async Task RegisterCommands(IGuild guild)
         {
             var guildCommand = new SlashCommandBuilder();
