@@ -43,7 +43,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             {
                 game = gameInfo.Name;
             }
-            if (categoryChannel is SocketCategoryChannel socketParentCategory && socketParentCategory.Channels.Any(b => b.Name.Equals(game, StringComparison.OrdinalIgnoreCase)))
+            if (categoryChannel is SocketCategoryChannel socketParentCategory && socketParentCategory.Channels.Any(b => b.Name.Equals(game, StringComparison.OrdinalIgnoreCase) || b.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase)))
             {
                 await Context.RespondAsync($"This game already has a channel", ephemeral: true);
                 return;
