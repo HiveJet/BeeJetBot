@@ -55,7 +55,6 @@ namespace BeeJet.Bot
             _client.Log += _logger.LogWithoutBroadcast;
             _commandService.Log += _logger.LogWithoutBroadcast;
 
-
             var serviceCollection = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
@@ -73,7 +72,7 @@ namespace BeeJet.Bot
             _joinHandler = new JoinHandler(_client, _commandService, _serviceProvider);
             _slashCommandHandler = new SlashCommandHandler(_client, _commandService, _serviceProvider, _commandSources.Select(_serviceProvider.GetService).OfType<ICommandSource>().ToList());
             _discordLogHandler = new DiscordLogHandler(_client);
-            _logger.LoggedEvent += _discordLogHandler.OnLoggedMessage;
+            _logger.BroadcastLogEvent += _discordLogHandler.OnLoggedMessage;
         }
 
         private List<Type> GetCommandSources()
@@ -104,7 +103,7 @@ namespace BeeJet.Bot
         {
             foreach (var commandSource in _commandSources.Select(_serviceProvider.GetService).OfType<ICommandSource>().ToList())
             {
-                foreach (var guild in _client.GetRelevantGuilds())
+                foreach (var guild in _client.GetBotGuilds())
                 {
                     await commandSource.RegisterCommands(guild);
                 }

@@ -5,13 +5,6 @@ namespace BeeJet.Bot.Commands
 {
     public class BaseCommands : ModuleBase<SocketCommandContext>
     {
-        private readonly DiscordLogger _logger;
-
-        public BaseCommands(DiscordLogger logger)
-        {
-            _logger = logger;
-        }
-
         // ~say hello -> hello
         [Command("say")]
         [Summary("Echos a message.")]
@@ -19,8 +12,6 @@ namespace BeeJet.Bot.Commands
         {
             // ReplyAsync is a method on ModuleBase
             await ReplyAsync(echo);
-
-            await _logger.Log($"Executed ECHO: {echo}");
         }
 
         // ~sample square 20 -> 400

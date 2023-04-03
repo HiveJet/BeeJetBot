@@ -24,7 +24,7 @@ namespace BeeJet.Bot.Extensions
             return guild.Roles.FirstOrDefault(b => b.Name == BeeJetBot.BOT_ADMIN_ROLE_NAME).Id;
         }
 
-        public static IEnumerable<SocketGuild> GetRelevantGuilds(this DiscordSocketClient client)
+        public static IEnumerable<SocketGuild> GetBotGuilds(this DiscordSocketClient client)
         {
             return client.Guilds.Where(b => b.Users.Any(u => u.IsBot && u.Username == BeeJetBot.BOT_NAME));
         }

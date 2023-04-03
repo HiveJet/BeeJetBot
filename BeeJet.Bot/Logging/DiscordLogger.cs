@@ -9,11 +9,11 @@ namespace BeeJet.Bot.Logging
 {
     public class DiscordLogger
     {
-        public Func<object, DiscordLogEventArgs, Task> LoggedEvent;
+        public Func<object, DiscordLogEventArgs, Task> BroadcastLogEvent;
 
         public Task Log(LogMessage message)
         {
-            return Log($"{DateTime.Now,-19} [{message.Severity,8}] {message.Source}: {message.Message} {message.Exception}", true);
+            return Log(message, true);
         }
 
         public Task Log(string message)
@@ -23,16 +23,21 @@ namespace BeeJet.Bot.Logging
 
         public Task LogWithoutBroadcast(LogMessage message)
         {
-            return Log($"{DateTime.Now,-19} [{message.Severity,8}] {message.Source}: {message.Message} {message.Exception}", false);
+            return Log(message, false);
         }
 
-        private Task Log(string message, bool broadCast)
+        public Task Log(LogMessage message, bool broadCast)
+        {
+            return Log($"{DateTime.Now,-19} [{message.Severity,8}] {message.Source}: {message.Message} {message.Exception}", broadCast);
+        }
+
+        public Task Log(string message, bool broadCast)
         {
             Console.WriteLine(message);
 
             if (broadCast)
             {
-                LoggedEvent?.Invoke(this, new DiscordLogEventArgs(message));
+                BroadcastLogEvent?.Invoke(this, new DiscordLogEventArgs(message));
             }
             return Task.CompletedTask;
         }
