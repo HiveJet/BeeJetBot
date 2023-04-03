@@ -31,6 +31,10 @@ namespace BeeJet.Bot.ClientHandlers
             foreach (var guild in _client.GetBotGuilds())
             {
                 var channelCategory = await guild.GetOrCreateCategory(LOGGING_CHANNEL_CATEGORY);
+                if (channelCategory != null)
+                {
+                    await SetCategoryPrivate(guild, channelCategory);
+                }
                 var logChannel = await GetOrCreateLogChannel(guild, channelCategory);
                 
                 if (logChannel != null)
@@ -42,6 +46,12 @@ namespace BeeJet.Bot.ClientHandlers
                     Console.WriteLine($"{nameof(DiscordLogHandler)}: Cannot find logging channel");
                 }
             }
+        }
+
+        private async Task SetCategoryPrivate(SocketGuild guild, ICategoryChannel channelCategory)
+        {
+            var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Deny);
+            await channelCategory.AddPermissionOverwriteAsync(guild.EveryoneRole, permissionOverrides);
         }
 
         // TODO: This contains sort of duplicate code; perhaps also add a GetOrCreateChannel extension method on Guild. Channel and Permission stuff should be a parameter
