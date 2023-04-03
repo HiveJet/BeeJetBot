@@ -54,12 +54,16 @@ namespace BeeJet.Bot
 
             _client.Log += _logger.Log;
             _commandService.Log += _logger.Log;
-
+          
             var serviceCollection = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
                 .AddSingleton(_logger)
-                .AddSingleton((serviceProvider) => new SteamAPIService(configuration["STEAM_KEY"]));
+                .AddSingleton((serviceProvider) => new SteamAPIService(configuration["STEAM_KEY"]))
+                .AddSingleton((serviceProvider) => new IGDBService(configuration["IGDB_CLIENTID"], configuration["IGDB_SECRET"]));
+            
+
+
             foreach (var commandType in _commandSources)
             {
                 serviceCollection.AddSingleton(commandType);
