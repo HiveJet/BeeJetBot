@@ -32,9 +32,9 @@ namespace BeeJet.Bot
         private readonly DiscordLogHandler _discordLogHandler;
         private readonly DiscordLogger _logger;
 
-        public BeeJetBot(IConfiguration configuration)
+        public BeeJetBot(BeeJetBotOptions options)
         {
-            _token = configuration["DISCORD_TOKEN"];
+            _token = options.DiscordToken;
             _commandSources = GetCommandSources();
             _logger = new DiscordLogger();
 
@@ -54,15 +54,13 @@ namespace BeeJet.Bot
 
             _client.Log += _logger.Log;
             _commandService.Log += _logger.Log;
-          
+
             var serviceCollection = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
                 .AddSingleton(_logger)
-                .AddSingleton((serviceProvider) => new SteamAPIService(configuration["STEAM_KEY"]))
-                .AddSingleton((serviceProvider) => new IGDBService(configuration["IGDB_CLIENTID"], configuration["IGDB_SECRET"]));
-            
-
+                .AddSingleton((serviceProvider) => new SteamAPIService(options.SteamAPIKey))
+                .AddSingleton((serviceProvider) => new IGDBService(options.IDGBClientId, options.IDGBClientSecret));
 
             foreach (var commandType in _commandSources)
             {

@@ -13,7 +13,7 @@ namespace BeeJet.Web
         public BotService(ILogger<BotService> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _bot = new BeeJetBot(configuration);
+            _bot = new BeeJetBot(new BeeJetBotOptions(configuration));
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
