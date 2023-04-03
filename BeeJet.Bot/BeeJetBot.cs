@@ -52,8 +52,8 @@ namespace BeeJet.Bot
                 CaseSensitiveCommands = false
             });
 
-            _client.Log += _logger.LogWithoutBroadcast;
-            _commandService.Log += _logger.LogWithoutBroadcast;
+            _client.Log += _logger.Log;
+            _commandService.Log += _logger.Log;
 
             var serviceCollection = new ServiceCollection()
                 .AddSingleton(_client)
