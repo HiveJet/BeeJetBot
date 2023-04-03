@@ -1,6 +1,5 @@
 ﻿using BeeJet.Bot.Commands.Sources;
 using BeeJet.Bot.Extensions;
-using BeeJet.Bot.Services;
 using Discord;
 using Discord.WebSocket;
 
@@ -8,11 +7,8 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 {
     internal class AddGameCommandHandler : SlashCommandExecutedHandler
     {
-        private readonly IGDBService _igdbService;
-
-        public AddGameCommandHandler(SocketSlashCommand context, Services.IGDBService igdbService) : base(context)
+        public AddGameCommandHandler(SocketSlashCommand context) : base(context)
         {
-            _igdbService = igdbService;
         }
 
         internal override async Task SlashCommandExecuted()
@@ -50,6 +46,8 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             await channel.AddPermissionOverwriteAsync(Guild.EveryoneRole, permissionOverrides);
             await channel.SendMessageAsync($"This is the channel for {game}");
 
+
+            await Context.RespondAsync($"Channel created", ephemeral: true);
         }
 
         private async Task<ICategoryChannel> GetOrCreateCategoryChannel(string categoryName)
@@ -64,42 +62,18 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private async Task AddToGameListChannel(string game, ICategoryChannel categoryChannel)
         {
-
             var gameListChannel = await AddOrGetGameListChannel(categoryChannel);
-            var builder = new ComponentBuilder()
-                .WithButton("Join", GameManagementCommandSource.JointButtonId, ButtonStyle.Success)
-                .WithButton("Leave", GameManagementCommandSource.LeaveButtonId, ButtonStyle.Danger);
-
-            var embed = await CreateGameInfoEmbed(game);
-
-            var message = await gameListChannel.SendMessageAsync($"Click to join channel for {game}", embed: embed?.Build(), components: builder.Build());
-
-
-            await Context.RespondAsync($"Channel created", ephemeral: true);
+            var builder = new ComponentBuilder().WithButton("Join", GameManagementCommandSource.JointButtonId, ButtonStyle.Success).WithButton("Leave", GameManagementCommandSource.LeaveButtonId, ButtonStyle.Danger);
+            var message = await gameListChannel.SendMessageAsync($"Click to join channel for {game}", components: builder.Build());
         }
 
-        private async Task<EmbedBuilder> CreateGameInfoEmbed(string game)
-        {
-            var gameInfo = await _igdbService.GetGameInfo(game);
-            if (gameInfo != null)
-            {
-                var embed = new EmbedBuilder()
-                    .WithTitle($"Game info for {game}")
-                    .AddField("Summary", gameInfo.Description)
-                    .WithFooter(footer => footer.Text = "Source:IGDB");
-                //.WithUrl("https://example.com")
-                //.WithCurrentTimestamp();
-                return embed;
-            }
-            return null;
-        }
 
         private async Task<ITextChannel> AddOrGetGameListChannel(ICategoryChannel categoryChannel)
         {
-            if (categoryChannel is not SocketCategoryChannel
-                || (categoryChannel is SocketCategoryChannel socketCategory && !socketCategory.Channels.Any(c => c.Name.Equals(GameManagementCommandSource.ChannelName, StringComparison.OrdinalIgnoreCase))))
+            if (categoryChannel is not SocketCategoryChannel 
+                || (categoryChannel is  SocketCategoryChannel socketCategory &&!socketCategory.Channels.Any(c => c.Name.Equals(GameManagementCommandSource.ChannelName, StringComparison.OrdinalIgnoreCase))))
             {
-                var gameListChannel = await Guild.CreateTextChannelAsync(GameManagementCommandSource.ChannelName, (properties) => properties.CategoryId = categoryChannel.Id);
+                var gameListChannel = await Guild.CreateTextChannelAsync(GameManagementCommandSource.ChannelName, (properties)=> properties.CategoryId = categoryChannel.Id);
                 var permissionOverrides = new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny);
                 await gameListChannel.AddPermissionOverwriteAsync(Guild.EveryoneRole, permissionOverrides);
                 return gameListChannel;

@@ -1,7 +1,6 @@
 ﻿using BeeJet.Bot.ClientHandlers;
 using BeeJet.Bot.Commands.Handlers;
 using BeeJet.Bot.Commands.Handlers.GameManagement;
-using BeeJet.Bot.Services;
 using Discord;
 using Discord.WebSocket;
 using System.Text.RegularExpressions;
@@ -14,11 +13,10 @@ namespace BeeJet.Bot.Commands.Sources
         internal const string JointButtonId = "join-game-id";
         internal const string LeaveButtonId = "leave-game-id";
         internal const string AddGameCommand = "add-game";
-        private readonly IGDBService _igdbService;
 
-        public GameManagementCommandSource(IGDBService igdbService)
+        public GameManagementCommandSource()
         {
-            _igdbService = igdbService;
+
         }
 
         public static async Task JoinGamePressed(IUserMessage message, SocketUser user)
@@ -104,7 +102,7 @@ namespace BeeJet.Bot.Commands.Sources
             switch (commandName)
             {
                 case AddGameCommand:
-                    return new AddGameCommandHandler(socketSlashCommand, _igdbService);
+                    return new AddGameCommandHandler(socketSlashCommand);
             }
             return null;
         }
