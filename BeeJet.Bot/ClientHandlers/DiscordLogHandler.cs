@@ -16,7 +16,7 @@ namespace BeeJet.Bot.ClientHandlers
     {
         private readonly DiscordSocketClient _client;
 
-        private const string LOGGING_CHANNEL_CATEGORY = "";
+        private const string LOGGING_CHANNEL_CATEGORY = "mod";
         private const string LOGGING_CHANNEL_NAME = "beejet-logs";
 
         public DiscordLogHandler(DiscordSocketClient client)
@@ -29,36 +29,43 @@ namespace BeeJet.Bot.ClientHandlers
             // Here we can push the logged message to a #bot-log channel instead of Console.WriteLine
             foreach (var guild in _client.GetRelevantGuilds())
             {
-                ICategoryChannel channelCategory = null;
-                if (!string.IsNullOrEmpty(LOGGING_CHANNEL_CATEGORY))
-                {
-                    channelCategory = await guild.GetOrCreateCategory(LOGGING_CHANNEL_CATEGORY);
-                }
-
+                var channelCategory = await guild.GetOrCreateCategory(LOGGING_CHANNEL_CATEGORY);
                 var logChannel = await GetOrCreateLogChannel(guild, channelCategory);
-                _ = await logChannel.SendMessageAsync($"LOG: {e.Message}");
+                
+                if (logChannel != null)
+                {
+                    _ = await logChannel.SendMessageAsync($"LOG: {e.Message}");
+                }
+                else
+                {
+                    Console.WriteLine($"{nameof(DiscordLogHandler)}: Cannot find logging channel");
+                }
             }
         }
 
-        // TODO: This is sort of duplicate code; perhaps also add a GetOrCreateChannel extension method on Guild. Channel and Permission stuff should be a parameter
-        private static async Task<ITextChannel> GetOrCreateLogChannel(SocketGuild guild, ICategoryChannel channelCategory)
+        // TODO: This contains sort of duplicate code; perhaps also add a GetOrCreateChannel extension method on Guild. Channel and Permission stuff should be a parameter
+        private static async Task<ITextChannel> GetOrCreateLogChannel(SocketGuild guild, ICategoryChannel logChannelCategory)
         {
-
-            //if (channelCategory is SocketCategoryChannel socketParentCategory && socketParentCategory.Channels.Any(b => b.Name.Equals(LOGGING_CHANNEL_NAME, StringComparison.OrdinalIgnoreCase)))
-            //{
-            //    return;
-            //}
-
-            if (!guild.Channels.Any(c => c.Name.Equals(LOGGING_CHANNEL_NAME, StringComparison.OrdinalIgnoreCase)))
+            if (logChannelCategory == null || logChannelCategory is not SocketCategoryChannel socketLogChannelCategory)
             {
-                var logChannel = await guild.CreateTextChannelAsync(LOGGING_CHANNEL_NAME);
+                return null;
+            }
+
+            // Get logging channel from found category
+            var logChannels = socketLogChannelCategory.Channels
+                .Where(b => b.Name.Equals(LOGGING_CHANNEL_NAME, StringComparison.OrdinalIgnoreCase));
+
+            // If no logging channel found, create one
+            if (!logChannels.Any())
+            {
+                var logChannel = await guild.CreateTextChannelAsync(LOGGING_CHANNEL_NAME, (properties) => properties.CategoryId = logChannelCategory.Id);
                 var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Deny);
                 await logChannel.AddPermissionOverwriteAsync(guild.EveryoneRole, permissionOverrides);
                 return logChannel;
             }
             else
             {
-                var textChannels = guild.Channels.OfType<ITextChannel>();
+                var textChannels = socketLogChannelCategory.Channels.OfType<ITextChannel>();
                 return textChannels.SingleOrDefault(c => c.Name.Equals(LOGGING_CHANNEL_NAME, StringComparison.OrdinalIgnoreCase));
             }
         }
