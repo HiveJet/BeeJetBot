@@ -87,7 +87,7 @@ namespace BeeJet.Bot.Commands.Sources
         public async Task RegisterCommands(IGuild guild)
         {
             var guildCommand = new SlashCommandBuilder();
-            guildCommand.WithName("add-game");
+            guildCommand.WithName(AddGameCommand);
             guildCommand.WithDescription("Add game channel");
             guildCommand.AddOption("game", ApplicationCommandOptionType.String, "The name of the game", isRequired: true);
             guildCommand.AddOption("category", ApplicationCommandOptionType.String, "Add to category", isRequired: false);
