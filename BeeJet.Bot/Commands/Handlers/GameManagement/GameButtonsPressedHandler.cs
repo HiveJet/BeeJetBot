@@ -5,10 +5,10 @@ using BeeJet.Bot.Commands.Sources;
 
 namespace BeeJet.Bot.Commands.Handlers.GameManagement
 {
-    public class GameButtonsPressedHandler
+    public class GameButtonsPressedHandler : IButtonPressedHandler
     {
         [ButtonPressedHandler(GameManagementCommandSource.JointButtonId)]
-        public static async Task JoinGamePressed(SocketMessageComponent component)
+        public async Task JoinGamePressed(SocketMessageComponent component)
         {
             if (TryGetGameName(component.Message, out string gameName))
             {
@@ -16,7 +16,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             }
         }
 
-        private static async Task JoinGameAsync(IUserMessage message, SocketUser user, string gameName)
+        private async Task JoinGameAsync(IUserMessage message, SocketUser user, string gameName)
         {
             SocketTextChannel gameChannel = GetGameChannel(message, gameName);
             if (gameChannel != null)
@@ -36,7 +36,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         }
 
         [ButtonPressedHandler(GameManagementCommandSource.LeaveButtonId)]
-        public static async Task LeaveGamePressed(SocketMessageComponent component)
+        public async Task LeaveGamePressed(SocketMessageComponent component)
         {
             if (TryGetGameName(component.Message, out string gameName))
             {
