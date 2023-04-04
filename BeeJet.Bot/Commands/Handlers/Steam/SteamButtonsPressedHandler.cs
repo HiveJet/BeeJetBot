@@ -17,7 +17,7 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
         [ButtonPressedHandler("join-game-", startsWith: true)]
         internal static async Task JoinGamePressed(SocketMessageComponent component)
         {
-            var match = new Regex("join-game-([a-zA-Z0-9\\s]*)-------([a-zA-Z0-9-\\s]*)").Match(component.Data.CustomId);
+            var match = new Regex("join-game-([a-zA-Z0-9\\s]*)-------([a-zA-Z0-9-\\s]*)",  RegexOptions.Compiled).Match(component.Data.CustomId);
             if (match.Success)
             {
                 var gameName = match.Groups[1].Value;

@@ -52,7 +52,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private static bool TryGetGameName(IUserMessage message, out string gameName)
         {
-            var regex = new Regex(@"Click to join channel for ([a-zA-Z0-9\s]*)");
+            var regex = new Regex(@"Click to join channel for ([a-zA-Z0-9\s]*)", RegexOptions.Compiled);
 
             var matching = regex.Match(message.Content);
             if (matching.Success)
