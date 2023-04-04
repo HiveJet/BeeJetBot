@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{787F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{CBA89324-F3F7-4D45-9FAE-E1D3B3BC1486}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\docker-image.yml = .github\workflows\docker-image.yml
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 	EndProjectSection
 EndProject
