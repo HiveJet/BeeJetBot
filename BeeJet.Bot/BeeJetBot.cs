@@ -10,6 +10,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using System.Data;
 
 namespace BeeJet.Bot
 {
@@ -63,6 +64,10 @@ namespace BeeJet.Bot
             foreach (var commandType in _commandSources)
             {
                 serviceCollection.AddSingleton(commandType);
+            }
+            foreach(var buttonHandlerType in ButtonHandler.GetButtonPressedHandlerTypes())
+            {
+                serviceCollection.AddSingleton(buttonHandlerType);
             }
             _serviceProvider = serviceCollection.BuildServiceProvider();
 

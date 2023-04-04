@@ -1,4 +1,5 @@
-﻿using BeeJet.Bot.Commands.Sources;
+﻿using BeeJet.Bot.Commands;
+using BeeJet.Bot.Commands.Sources;
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Reflection;
@@ -7,7 +8,7 @@ namespace BeeJet.Bot.ClientHandlers
 {
     internal class ButtonHandler : BaseClientHandler
     {
-        private readonly List<(ButtonPressedHandlerAttribute Attribute, MethodInfo Method)> _handlers;
+        private readonly List<(ButtonPressedHandlerAttribute Attribute, MethodInfo Method, Type InstanceType)> _handlers;
 
         public ButtonHandler(DiscordSocketClient client, CommandService service, IServiceProvider serviceProvider)
             : base(client, service, serviceProvider)
@@ -15,15 +16,22 @@ namespace BeeJet.Bot.ClientHandlers
             _handlers = GetHandlers();
         }
 
-        private List<(ButtonPressedHandlerAttribute Attribute, MethodInfo Method)> GetHandlers()
+        private List<(ButtonPressedHandlerAttribute Attribute, MethodInfo Method, Type InstanceType)> GetHandlers()
         {
-            return AppDomain.CurrentDomain.GetAssemblies()
-                   .SelectMany(s => s.GetTypes())
-                   .Where(p => !p.IsAbstract).SelectMany(b => b.GetMethods().Select(m => (Attribute: m.GetCustomAttribute<ButtonPressedHandlerAttribute>(), Method: m)).Where(b => b.Attribute != null
-                            && b.Method.IsStatic
+            return GetButtonPressedHandlerTypes().SelectMany(type => type.GetMethods().Select(m => (Attribute: m.GetCustomAttribute<ButtonPressedHandlerAttribute>(), Method: m, InstanceType: type))
+                   .Where(b => b.Attribute != null
+                            && !b.Method.IsStatic
                             && b.Method.GetParameters().Count() == 1
                             && b.Method.ReturnType == typeof(Task)
                             && b.Method.GetParameters().FirstOrDefault()?.ParameterType == typeof(SocketMessageComponent))).ToList();
+        }
+
+        public static IEnumerable<Type> GetButtonPressedHandlerTypes()
+        {
+            var interfaceType = typeof(IButtonPressedHandler);
+            return AppDomain.CurrentDomain.GetAssemblies()
+                               .SelectMany(s => s.GetTypes())
+                               .Where(type => !type.IsAbstract && interfaceType.IsAssignableFrom(type));
         }
 
         public async Task ButtonPressed(SocketMessageComponent component)
@@ -35,7 +43,8 @@ namespace BeeJet.Bot.ClientHandlers
                     : component.Data.CustomId.Equals(handler.Attribute.CustomId, StringComparison.OrdinalIgnoreCase);
                 if (customIdMatch)
                 {
-                    await (Task)handler.Method.Invoke(null, new object[] { component });
+                    var instance = _serviceProvider.GetService(handler.InstanceType);
+                    await (Task)handler.Method.Invoke(instance, new object[] { component });
                     await component.DeferAsync();
                     return;
                 }
