@@ -22,26 +22,6 @@ namespace BeeJet.Bot.Commands.Sources
             _steamAPI = steamAPI;
         }
 
-        internal static async Task JoinGamePressed(SocketMessageComponent component)
-        {
-            var match = new Regex("join-game-([a-zA-Z0-9\\s]*)-------([a-zA-Z0-9-\\s]*)").Match(component.Data.CustomId);
-            if (match.Success)
-            {
-                var gameName = match.Groups[1].Value;
-                var category = match.Groups[2].Value;
-                var channel = GetGameChannel(component.Message, gameName, category);
-                await GameManagementCommandSource.GivePermissionToJoinChannel(component.User, channel);
-                await component.DeferAsync(true);
-            }
-        }
-
-        private static SocketTextChannel GetGameChannel(IUserMessage message, string gameName, string categoryName)
-        {
-            var textChannels = ((SocketTextChannel)message.Channel).Guild.Channels.OfType<SocketTextChannel>();
-            var gameChannel = textChannels.FirstOrDefault(b => b.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && b.Category.Name == categoryName.Replace("-", " "));
-            return gameChannel;
-        }
-
         public SlashCommandExecutedHandler GetCommandHandler(string commandName, SocketSlashCommand socketSlashCommand)
         {
             switch (commandName)
