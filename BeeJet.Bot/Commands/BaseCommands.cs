@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using BeeJet.Bot.Logging;
+using Discord.Commands;
 
 namespace BeeJet.Bot.Commands
 {
