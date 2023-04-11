@@ -3,7 +3,7 @@ using Discord.WebSocket;
 
 namespace BeeJet.Bot.ClientHandlers
 {
-    internal abstract class BaseClientHandler
+    public abstract class BaseClientHandler
     {
         protected readonly DiscordSocketClient _client;
         protected readonly CommandService _commandService;

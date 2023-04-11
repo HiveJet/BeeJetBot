@@ -4,7 +4,7 @@ using Discord.WebSocket;
 
 namespace BeeJet.Bot.ClientHandlers
 {
-    internal class ReactionHandler : BaseClientHandler
+    public class ReactionHandler : BaseClientHandler
     {
         public ReactionHandler(DiscordSocketClient client, CommandService service, IServiceProvider serviceProvider)
             : base(client, service, serviceProvider)

@@ -1,4 +1,5 @@
 ﻿using BeeJet.Bot.Commands.Handlers;
+using BeeJet.Bot.Managers;
 using Discord.Commands;
 
 namespace BeeJet.Bot.Commands
@@ -9,7 +10,8 @@ namespace BeeJet.Bot.Commands
         [Summary("Add gamechannel")]
         public async Task AddGameAsync([Summary("Name of the game")] string game)
         {
-            await new GameManagementHandler(Context).AddGameAsync(game);
+            var guildManager = new GuildManager(Context.Guild);
+            await new ContextGameManagementHandler(Context, guildManager).AddGameAsync(game);
         }
     }
 }

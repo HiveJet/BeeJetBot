@@ -1,27 +1,21 @@
-﻿using Discord.Commands;
+﻿using BeeJet.Bot.Interfaces;
+using Discord;
+using Discord.Commands;
 
 namespace BeeJet.Bot.Commands.Handlers
 {
-    public class BaseHandler
+    public abstract class BaseHandler
     {
-        public SocketCommandContext Context { get; set; }
+        public IGuildManager GuildManager { get; }
+        public abstract IMessageChannel MessageChannel { get; }// => Context is not null ? Context.Channel : UserMessage?.Channel;
+        public IGuildChannel GuidChannel => (IGuildChannel)MessageChannel;
 
-        public BaseHandler(SocketCommandContext context)
-        {
-            Context = context;
-        }
+        public abstract IGuildUser User { get; }// => (IGuildUser)(Context is not null ? Context.User : (IGuildUser)UserMessage.Author);
 
-        protected async Task AddAdminRoleIfNeeded()
-        {
-            if (!Context.Guild.Roles.Any(b => b.Name == "BeeJetBotAdmin"))
-            {
-                await Context.Guild.CreateRoleAsync("BeeJetBotAdmin");
-            }
-        }
 
-        protected ulong GetAdminRoleId()
+        public BaseHandler(IGuildManager guildManager)
         {
-            return Context.Guild.Roles.FirstOrDefault(b => b.Name == "BeeJetBotAdmin").Id;
+            GuildManager = guildManager;
         }
     }
 }
