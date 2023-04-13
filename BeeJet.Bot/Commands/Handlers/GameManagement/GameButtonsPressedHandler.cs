@@ -1,13 +1,12 @@
 ﻿using Discord.WebSocket;
 using Discord;
 using System.Text.RegularExpressions;
-using BeeJet.Bot.Commands.Sources;
 
 namespace BeeJet.Bot.Commands.Handlers.GameManagement
 {
     public class GameButtonsPressedHandler : IButtonPressedHandler
     {
-        [ButtonPressedHandler(GameManagementCommandSource.JointButtonId)]
+        [ButtonPressedHandler(AddGameCommandHandler.JointButtonId)]
         public async Task JoinGamePressed(SocketMessageComponent component)
         {
             if (TryGetGameName(component.Message, out string gameName))
@@ -35,7 +34,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             }
         }
 
-        [ButtonPressedHandler(GameManagementCommandSource.LeaveButtonId)]
+        [ButtonPressedHandler(AddGameCommandHandler.LeaveButtonId)]
         public async Task LeaveGamePressed(SocketMessageComponent component)
         {
             if (TryGetGameName(component.Message, out string gameName))
