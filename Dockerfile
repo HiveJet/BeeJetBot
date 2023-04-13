@@ -10,11 +10,9 @@ WORKDIR /src
 
 # copy everything and restore
 COPY ["BeeJet.Bot/BeeJet.Bot.csproj", "BeeJet.Bot/"]
-# COPY "BeeJet.Bot/*" "BeeJet.Bot/"
 RUN dotnet restore "BeeJet.Bot/BeeJet.Bot.csproj"
 
 COPY ["BeeJet.Web/BeeJet.Web.csproj", "BeeJet.Web/"]
-# COPY "BeeJet.Web/*" "BeeJet.Web/"
 RUN dotnet restore "BeeJet.Web/BeeJet.Web.csproj"
 
 COPY . .
