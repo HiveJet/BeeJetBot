@@ -1,16 +1,12 @@
 ﻿using BeeJet.Bot.ClientHandlers;
 using BeeJet.Bot.Commands;
 using BeeJet.Bot.Services;
-using BeeJet.Bot.Commands.Sources;
-using BeeJet.Bot.Extensions;
 using BeeJet.Bot.Logging;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using System.Data;
 
 namespace BeeJet.Bot
 {
@@ -28,7 +24,6 @@ namespace BeeJet.Bot
         private readonly ReactionHandler _reactionHandler;
         private readonly ButtonHandler _buttonHandler;
         private readonly SlashCommandHandler _slashCommandHandler;
-        private List<Type> _commandSources;
         private readonly JoinHandler _joinHandler;
         private readonly DiscordLogHandler _discordLogHandler;
         private readonly DiscordLogger _logger;
@@ -36,7 +31,6 @@ namespace BeeJet.Bot
         public BeeJetBot(BeeJetBotOptions options)
         {
             _token = options.DiscordToken;
-            _commandSources = GetCommandSources();
             _logger = new DiscordLogger();
 
 
@@ -63,11 +57,11 @@ namespace BeeJet.Bot
                 .AddSingleton((serviceProvider) => new SteamAPIService(options.SteamAPIKey))
                 .AddSingleton((serviceProvider) => new IGDBService(options.IDGBClientId, options.IDGBClientSecret));
 
-            foreach (var commandType in _commandSources)
+            foreach (var commandType in SlashCommandHandler.GetCommandSourceTypes())
             {
                 serviceCollection.AddSingleton(commandType);
             }
-            foreach(var buttonHandlerType in ButtonHandler.GetButtonPressedHandlerTypes())
+            foreach (var buttonHandlerType in ButtonHandler.GetButtonPressedHandlerTypes())
             {
                 serviceCollection.AddSingleton(buttonHandlerType);
             }
@@ -77,18 +71,11 @@ namespace BeeJet.Bot
             _reactionHandler = new ReactionHandler(_client, _commandService, _serviceProvider);
             _buttonHandler = new ButtonHandler(_client, _commandService, _serviceProvider);
             _joinHandler = new JoinHandler(_client, _commandService, _serviceProvider);
-            _slashCommandHandler = new SlashCommandHandler(_client, _commandService, _serviceProvider, _commandSources.Select(_serviceProvider.GetService).OfType<ICommandSource>().ToList());
+            _slashCommandHandler = new SlashCommandHandler(_client, _commandService, _serviceProvider);
             _discordLogHandler = new DiscordLogHandler(_client);
             _logger.BroadcastLogEvent += _discordLogHandler.OnLoggedMessage;
         }
 
-        private List<Type> GetCommandSources()
-        {
-            var type = typeof(ICommandSource);
-            return AppDomain.CurrentDomain.GetAssemblies()
-                 .SelectMany(s => s.GetTypes())
-                 .Where(p => type.IsAssignableFrom(p) && !p.IsAbstract).ToList();
-        }
 
         public async Task InstallCommandsAsync()
         {
@@ -108,13 +95,7 @@ namespace BeeJet.Bot
 
         private async Task OnClientReady()
         {
-            foreach (var commandSource in _commandSources.Select(_serviceProvider.GetService).OfType<ICommandSource>().ToList())
-            {
-                foreach (var guild in _client.GetBotGuilds())
-                {
-                    await commandSource.RegisterCommands(guild);
-                }
-            }
+            await _slashCommandHandler.OnClientReadyAsync();
         }
 
         public async Task LoginAndRun()
