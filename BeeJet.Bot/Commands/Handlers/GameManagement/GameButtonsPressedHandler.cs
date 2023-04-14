@@ -4,18 +4,19 @@ using System.Text.RegularExpressions;
 
 namespace BeeJet.Bot.Commands.Handlers.GameManagement
 {
-    public class GameButtonsPressedHandler : IButtonPressedHandler
+    public class GameButtonsPressedHandler : ButtonPressedHandler
     {
         [ButtonPressedHandler(AddGameCommandHandler.JointButtonId)]
-        public async Task JoinGamePressed(SocketMessageComponent component)
+        public async Task JoinGamePressed()
         {
-            if (TryGetGameName(component.Message, out string gameName))
+            if (TryGetGameName(Context.Message, out string gameName))
             {
-                await JoinGameAsync(component.Message, component.User, gameName);
+                await JoinGameAsync(Context.Message, Context.User, gameName);
             }
+            await Context.ComponentInteraction.DeferAsync();
         }
 
-        private async Task JoinGameAsync(IUserMessage message, SocketUser user, string gameName)
+        private async Task JoinGameAsync(IUserMessage message, IUser user, string gameName)
         {
             SocketTextChannel gameChannel = GetGameChannel(message, gameName);
             if (gameChannel != null)
@@ -24,7 +25,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             }
         }
 
-        public static async Task GivePermissionToJoinChannel(SocketUser user, SocketTextChannel gameChannel)
+        public static async Task GivePermissionToJoinChannel(IUser user, SocketTextChannel gameChannel)
         {
             if (!gameChannel.Users.Any(b => b.Id == user.Id))
             {
@@ -35,18 +36,19 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         }
 
         [ButtonPressedHandler(AddGameCommandHandler.LeaveButtonId)]
-        public async Task LeaveGamePressed(SocketMessageComponent component)
+        public async Task LeaveGamePressed()
         {
-            if (TryGetGameName(component.Message, out string gameName))
+            if (TryGetGameName(Context.Message, out string gameName))
             {
-                ITextChannel gameChannel = GetGameChannel(component.Message, gameName);
+                ITextChannel gameChannel = GetGameChannel(Context.Message, gameName);
                 if (gameChannel != null)
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Inherit);
-                    await gameChannel.AddPermissionOverwriteAsync(component.User, permissionOverrides);
-                    await gameChannel.SendMessageAsync($"<@{component.User.Id}> has left the channel");
+                    await gameChannel.AddPermissionOverwriteAsync(Context.User, permissionOverrides);
+                    await gameChannel.SendMessageAsync($"<@{Context.User.Id}> has left the channel");
                 }
             }
+            await Context.ComponentInteraction.DeferAsync();
         }
 
         private static bool TryGetGameName(IUserMessage message, out string gameName)

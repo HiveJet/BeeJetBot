@@ -5,7 +5,7 @@ namespace BeeJet.Bot.Extensions
 {
     public static class GuildExtensions
     {
-        public async static Task AddAdminRoleIfNeeded(this SocketGuild guild)
+        public async static Task AddAdminRoleIfNeeded(this IGuild guild)
         {
             if (!guild.Roles.Any(b => b.Name == BeeJetBot.BOT_ADMIN_ROLE_NAME))
             {
@@ -13,7 +13,7 @@ namespace BeeJet.Bot.Extensions
             }
         }
 
-        public static ulong GetAdminRoleId(this SocketGuild guild)
+        public static ulong GetAdminRoleId(this IGuild guild)
         {
             return guild.Roles.FirstOrDefault(b => b.Name == BeeJetBot.BOT_ADMIN_ROLE_NAME).Id;
         }

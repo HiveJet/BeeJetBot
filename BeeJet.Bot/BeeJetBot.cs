@@ -59,11 +59,11 @@ namespace BeeJet.Bot
 
             foreach (var commandType in SlashCommandHandler.GetCommandSourceTypes())
             {
-                serviceCollection.AddSingleton(commandType);
+                serviceCollection.AddScoped(commandType);
             }
             foreach (var buttonHandlerType in ButtonHandler.GetButtonPressedHandlerTypes())
             {
-                serviceCollection.AddSingleton(buttonHandlerType);
+                serviceCollection.AddScoped(buttonHandlerType);
             }
             _serviceProvider = serviceCollection.BuildServiceProvider();
 

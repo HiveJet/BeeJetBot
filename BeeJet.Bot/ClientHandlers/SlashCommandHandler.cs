@@ -1,4 +1,5 @@
 ﻿using BeeJet.Bot.Attributes;
+using BeeJet.Bot.Commands;
 using BeeJet.Bot.Commands.Handlers;
 using BeeJet.Bot.Extensions;
 using Discord;
@@ -28,7 +29,7 @@ namespace BeeJet.Bot.ClientHandlers
 
         public static IEnumerable<Type> GetCommandSourceTypes()
         {
-            var type = typeof(ICommandSource);
+            var type = typeof(CommandSource);
             return AppDomain.CurrentDomain.GetAssemblies()
                                .SelectMany(s => s.GetTypes())
                                .Where(p => type.IsAssignableFrom(p) && !p.IsAbstract);
@@ -39,12 +40,16 @@ namespace BeeJet.Bot.ClientHandlers
             var commandHandler = _commandMethods.FirstOrDefault(b => b.CommandName.Equals(slashCommandArguments.CommandName, StringComparison.OrdinalIgnoreCase));
             if (commandHandler.ClassType != null)
             {
-                var handlerInstance = _serviceProvider.GetService(commandHandler.ClassType);
-                if (handlerInstance != null)
+                var context = new SlashCommandContext(slashCommandArguments, _client);
+                using (var scope = _serviceProvider.CreateBeeJetBotResponseScope(context))
                 {
-                    SlashCommandContext context = new SlashCommandContext(slashCommandArguments);
-                    await context.Initialize(_client);
-                    commandHandler.Method.Invoke(handlerInstance, new object[] { context });
+                    var handlerInstance = scope.ServiceProvider.GetService(commandHandler.ClassType) as CommandSource;
+                    if (handlerInstance != null)
+                    {
+                        handlerInstance.Context = context;
+                        await handlerInstance.Context.Initialize();
+                        commandHandler.Method.Invoke(handlerInstance, null);
+                    }
                 }
             }
         }

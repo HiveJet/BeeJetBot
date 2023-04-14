@@ -6,7 +6,7 @@ using Discord.WebSocket;
 
 namespace BeeJet.Bot.Commands.Handlers.GameManagement
 {
-    internal class AddGameCommandHandler : ICommandSource
+    internal class AddGameCommandHandler : CommandSource
     {
         internal static readonly string ChannelName = "Game-channels";
         internal const string JointButtonId = "join-game-id";
@@ -25,17 +25,17 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         }
 
         [BeeJetBotSlashCommand("add-game", "Add game channel", nameof(RegisterOptions))]
-        public async Task SlashCommandExecuted(SlashCommandContext context)
+        public async Task SlashCommandExecuted()
         {
-            var gameName = (string)context.DiscordContext.Data.Options.First().Value;
+            var gameName = (string)Context.SlashCommandInteraction.Data.Options.First().Value;
             var categoryName = "Gaming";//Default name
-            var category = context.DiscordContext.Data.Options.FirstOrDefault(b => b.Name == "category");
+            var category = Context.SlashCommandInteraction.Data.Options.FirstOrDefault(b => b.Name == "category");
             if (category != null)
             {
                 categoryName = (string)category.Value;
 
             }
-            await AddGameAsync(gameName, categoryName, context);
+            await AddGameAsync(gameName, categoryName, Context);
         }
 
         public async Task AddGameAsync(string game, string categoryName, SlashCommandContext context)
@@ -43,7 +43,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             ulong roleId = context.Guild.GetAdminRoleId();
             if (!(context.User as IGuildUser).RoleIds.Contains(roleId))
             {
-                await context.DiscordContext.RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
+                await context.SlashCommandInteraction.RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
                 return;
             }
 
@@ -55,14 +55,14 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             }
             if (categoryChannel is SocketCategoryChannel socketParentCategory && socketParentCategory.Channels.Any(b => b.Name.Equals(game, StringComparison.OrdinalIgnoreCase) || b.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase)))
             {
-                await context.DiscordContext.RespondAsync($"This game already has a channel", ephemeral: true);
+                await context.SlashCommandInteraction.RespondAsync($"This game already has a channel", ephemeral: true);
                 return;
             }
             var gameInfoEmbed = CreateGameInfoEmbed(gameInfo);
             await AddToGameListChannelAsync(game, categoryChannel, gameInfoEmbed, context);
 
             var channel = await context.Guild.CreateTextChannelAsync(game.Trim().Replace(" ", "-"), (properties) => properties.CategoryId = categoryChannel.Id);
-            await context.DiscordContext.RespondAsync($"Channel created", ephemeral: true);
+            await context.SlashCommandInteraction.RespondAsync($"Channel created", ephemeral: true);
 
             var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Deny);
             await channel.AddPermissionOverwriteAsync(context.Guild.EveryoneRole, permissionOverrides);
@@ -72,10 +72,10 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private async Task<ICategoryChannel> GetOrCreateCategoryChannelAsync(string categoryName, SlashCommandContext context)
         {
-            ICategoryChannel parentChannel = context.Guild.Channels.OfType<SocketCategoryChannel>().FirstOrDefault(b => b.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+            ICategoryChannel parentChannel = (await context.Guild.GetChannelsAsync()).OfType<SocketCategoryChannel>().FirstOrDefault(b => b.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
             if (parentChannel == null)
             {
-                parentChannel = await context.Guild.CreateCategoryChannelAsync(categoryName);
+                parentChannel = await context.Guild.CreateCategoryAsync(categoryName);
             }
             return parentChannel;
         }
@@ -128,7 +128,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             }
             else
             {
-                var textChannels = context.Guild.Channels.OfType<ITextChannel>();
+                var textChannels = (await context.Guild.GetChannelsAsync()).OfType<ITextChannel>();
                 return textChannels.SingleOrDefault(c => c.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase) && c.CategoryId == categoryChannel.Id);
             }
         }

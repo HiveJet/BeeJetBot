@@ -5,21 +5,21 @@ using BeeJet.Bot.Commands.Handlers.GameManagement;
 
 namespace BeeJet.Bot.Commands.Handlers.Steam
 {
-    public class SteamButtonsPressedHandler : IButtonPressedHandler
+    public class SteamButtonsPressedHandler : ButtonPressedHandler
     {
 
-        [ButtonPressedHandler("join-game-", startsWith: true)]
-        public async Task JoinGamePressed(SocketMessageComponent component)
+        [ButtonPressedHandler("join-game-id-", startsWith: true)]
+        public async Task JoinGamePressed()
         {
-            var match = new Regex("join-game-([a-zA-Z0-9\\s]*)-------([a-zA-Z0-9-\\s]*)",  RegexOptions.Compiled).Match(component.Data.CustomId);
+            var match = new Regex("join-game-id-([a-zA-Z0-9\\s]*)-------([a-zA-Z0-9-\\s]*)",  RegexOptions.Compiled).Match(Context.ComponentInteraction.Data.CustomId);
             if (match.Success)
             {
                 var gameName = match.Groups[1].Value;
                 var category = match.Groups[2].Value;
-                var channel = GetGameChannel(component.Message, gameName, category);
-                await GameButtonsPressedHandler.GivePermissionToJoinChannel(component.User, channel);
-                await component.DeferAsync(true);
+                var channel = GetGameChannel(Context.Message, gameName, category);
+                await GameButtonsPressedHandler.GivePermissionToJoinChannel(Context.User, channel);
             }
+            await Context.ComponentInteraction.DeferAsync(true);
         }
 
         private static SocketTextChannel GetGameChannel(IUserMessage message, string gameName, string categoryName)

@@ -1,4 +1,5 @@
 ﻿using BeeJet.Bot.Commands;
+using BeeJet.Bot.Extensions;
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Reflection;
@@ -20,17 +21,15 @@ namespace BeeJet.Bot.ClientHandlers
             return GetButtonPressedHandlerTypes().SelectMany(type => type.GetMethods().Select(m => (Attribute: m.GetCustomAttribute<ButtonPressedHandlerAttribute>(), Method: m, InstanceType: type))
                    .Where(b => b.Attribute != null
                             && !b.Method.IsStatic
-                            && b.Method.GetParameters().Count() == 1
-                            && b.Method.ReturnType == typeof(Task)
-                            && b.Method.GetParameters().FirstOrDefault()?.ParameterType == typeof(SocketMessageComponent))).ToList();
+                            && b.Method.ReturnType == typeof(Task))).ToList();
         }
 
         public static IEnumerable<Type> GetButtonPressedHandlerTypes()
         {
-            var interfaceType = typeof(IButtonPressedHandler);
+            var buttonPressedHandlerType = typeof(ButtonPressedHandler);
             return AppDomain.CurrentDomain.GetAssemblies()
                                .SelectMany(s => s.GetTypes())
-                               .Where(type => !type.IsAbstract && interfaceType.IsAssignableFrom(type));
+                               .Where(type => !type.IsAbstract && buttonPressedHandlerType.IsAssignableFrom(type));
         }
 
         public async Task ButtonPressed(SocketMessageComponent component)
@@ -42,9 +41,13 @@ namespace BeeJet.Bot.ClientHandlers
                     : component.Data.CustomId.Equals(handler.Attribute.CustomId, StringComparison.OrdinalIgnoreCase);
                 if (customIdMatch)
                 {
-                    var instance = _serviceProvider.GetService(handler.InstanceType);
-                    await (Task)handler.Method.Invoke(instance, new object[] { component });
-                    await component.DeferAsync();
+                    var context = new ButtonPressedContext(component, _client);
+                    using (var scope = _serviceProvider.CreateBeeJetBotResponseScope(context))
+                    {
+                        var instance = scope.ServiceProvider.GetService(handler.InstanceType) as ButtonPressedHandler;
+                        instance.Context = context;
+                        await (Task)handler.Method.Invoke(instance, null);
+                    }
                     return;
                 }
             }
