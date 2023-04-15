@@ -21,10 +21,12 @@ namespace BeeJet.Bot.ClientHandlers
         private List<(Type ClassType, MethodInfo Method, string CommandName)> GetCommandMethods()
         {
             var commandSources = GetCommandSourceTypes();
-            return commandSources.SelectMany(c => c.GetMethods()
-                                                .Where(m =>
-                                                m.GetCustomAttribute<BeeJetBotSlashCommandAttribute>() != null
-                                                ).Select(m => (ClassType: c, Method: m, CommandName: m.GetCustomAttribute<BeeJetBotSlashCommandAttribute>().CommandName))).ToList();
+            return commandSources.SelectMany(commandSourceType => commandSourceType.GetMethods()
+                                                .Where(method =>
+                                                method.GetCustomAttribute<BeeJetBotSlashCommandAttribute>() != null
+                                                &&
+                                                method.ReturnType == typeof(Task)
+                                                ).Select(method => (ClassType: commandSourceType, Method: method, CommandName: method.GetCustomAttribute<BeeJetBotSlashCommandAttribute>().CommandName))).ToList();
         }
 
         public static IEnumerable<Type> GetCommandSourceTypes()
@@ -39,22 +41,23 @@ namespace BeeJet.Bot.ClientHandlers
         {
             SlashCommandContext context = new SlashCommandContext(slashCommandArguments, _client);
             await context.Initialize();
-            ExecuteSlashCommand(slashCommandArguments.CommandName, context);
+            await ExecuteSlashCommandAsync(slashCommandArguments.CommandName, context);
         }
 
-        private void ExecuteSlashCommand(string commandName, SlashCommandContext context)
+        private async  Task ExecuteSlashCommandAsync(string commandName, SlashCommandContext context)
         {
             var commandHandler = _commandMethods.FirstOrDefault(b => b.CommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase));
-            if (commandHandler.ClassType != null)
+            if (commandHandler.ClassType == null)
             {
-                using (var scope = _serviceProvider.CreateBeeJetBotResponseScope(context))
+                return;
+            }
+            using (var scope = _serviceProvider.CreateBeeJetBotResponseScope(context))
+            {
+                var handlerInstance = scope.ServiceProvider.GetService(commandHandler.ClassType) as CommandSource;
+                if (handlerInstance != null)
                 {
-                    var handlerInstance = scope.ServiceProvider.GetService(commandHandler.ClassType) as CommandSource;
-                    if (handlerInstance != null)
-                    {
-                        handlerInstance.Context = context;
-                        commandHandler.Method.Invoke(handlerInstance, null);
-                    }
+                    handlerInstance.Context = context;
+                    await (Task)commandHandler.Method.Invoke(handlerInstance, null);
                 }
             }
         }
