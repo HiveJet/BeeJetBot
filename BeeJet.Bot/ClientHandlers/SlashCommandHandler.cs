@@ -36,14 +36,20 @@ namespace BeeJet.Bot.ClientHandlers
 
         internal async Task SlashCommandExecuted(SocketSlashCommand slashCommandArguments)
         {
-            var commandHandler = _commandMethods.FirstOrDefault(b => b.CommandName.Equals(slashCommandArguments.CommandName, StringComparison.OrdinalIgnoreCase));
+            SlashCommandContext context = new SlashCommandContext(slashCommandArguments);
+            await context.Initialize(_client);
+            ExceuteSlashCommand(slashCommandArguments.CommandName, context);
+        }
+
+        private void ExceuteSlashCommand(string commandName, SlashCommandContext context)
+        {
+            var commandHandler = _commandMethods.FirstOrDefault(b => b.CommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase));
             if (commandHandler.ClassType != null)
             {
                 var handlerInstance = _serviceProvider.GetService(commandHandler.ClassType);
                 if (handlerInstance != null)
                 {
-                    SlashCommandContext context = new SlashCommandContext(slashCommandArguments);
-                    await context.Initialize(_client);
+
                     commandHandler.Method.Invoke(handlerInstance, new object[] { context });
                 }
             }
