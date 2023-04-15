@@ -58,24 +58,36 @@ namespace BeeJet.Bot.ClientHandlers
         {
             foreach (var commandSource in _commandMethods)
             {
-                var attribute = commandSource.Method.GetCustomAttribute<BeeJetBotSlashCommandAttribute>();
-                SlashCommandBuilder builder = new SlashCommandBuilder();
-                var guildCommand = new SlashCommandBuilder();
-                guildCommand.WithName(attribute.CommandName);
-                guildCommand.WithDescription(attribute.Description);
-                if (!string.IsNullOrWhiteSpace(attribute.BuilderMethod))
+                SlashCommandBuilder guildCommand = CreateCommand(commandSource);
+                await AddCommandToGuilds(guildCommand);
+            }
+        }
+
+        private async Task AddCommandToGuilds(SlashCommandBuilder guildCommand)
+        {
+            foreach (var guild in _client.GetBotGuilds())
+            {
+                await guild.CreateApplicationCommandAsync(guildCommand.Build());
+            }
+        }
+
+        private SlashCommandBuilder CreateCommand((Type ClassType, MethodInfo Method, string CommandName) commandSource)
+        {
+            var attribute = commandSource.Method.GetCustomAttribute<BeeJetBotSlashCommandAttribute>();
+            SlashCommandBuilder builder = new SlashCommandBuilder();
+            var guildCommand = new SlashCommandBuilder();
+            guildCommand.WithName(attribute.CommandName);
+            guildCommand.WithDescription(attribute.Description);
+            if (!string.IsNullOrWhiteSpace(attribute.BuilderMethod))
+            {
+                var builderMethod = commandSource.ClassType.GetMethods().FirstOrDefault(b => b.Name == attribute.BuilderMethod && b.GetParameters().Length == 1 && b.GetParameters()[0].ParameterType == typeof(SlashCommandBuilder));
+                if (builderMethod != null)
                 {
-                    var builderMethod = commandSource.ClassType.GetMethods().FirstOrDefault(b => b.Name == attribute.BuilderMethod && b.GetParameters().Length == 1 && b.GetParameters()[0].ParameterType == typeof(SlashCommandBuilder));
-                    if (builderMethod != null)
-                    {
-                        builderMethod.Invoke(_serviceProvider.GetService(commandSource.ClassType), new object[] { guildCommand });
-                    }
-                }
-                foreach (var guild in _client.GetBotGuilds())
-                {
-                    await guild.CreateApplicationCommandAsync(guildCommand.Build());
+                    builderMethod.Invoke(_serviceProvider.GetService(commandSource.ClassType), new object[] { guildCommand });
                 }
             }
+
+            return guildCommand;
         }
     }
 }
