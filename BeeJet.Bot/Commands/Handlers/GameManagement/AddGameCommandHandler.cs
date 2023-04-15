@@ -35,7 +35,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
                 categoryName = (string)category.Value;
 
             }
-            await AddGameAsync(gameName, categoryName, context);
+            await AddGameAsync(gameName, categoryName, Context);
         }
 
         public async Task AddGameAsync(string game, string categoryName, SlashCommandContext context)
