@@ -16,6 +16,10 @@ namespace BeeJet.Bot.Commands
         public IUser User { get; set; }
         public IDiscordClient Client { get; private set; }
 
+        public ButtonPressedContext()
+        {
+        }
+
         public ButtonPressedContext(IComponentInteraction context, IDiscordClient client)
         {
             ComponentInteraction = context;
