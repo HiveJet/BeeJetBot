@@ -39,10 +39,10 @@ namespace BeeJet.Bot.ClientHandlers
         {
             SlashCommandContext context = new SlashCommandContext(slashCommandArguments);
             await context.Initialize(_client);
-            ExceuteSlashCommand(slashCommandArguments.CommandName, context);
+            ExecuteSlashCommand(slashCommandArguments.CommandName, context);
         }
 
-        private void ExceuteSlashCommand(string commandName, SlashCommandContext context)
+        private void ExecuteSlashCommand(string commandName, SlashCommandContext context)
         {
             var commandHandler = _commandMethods.FirstOrDefault(b => b.CommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase));
             if (commandHandler.ClassType != null)
