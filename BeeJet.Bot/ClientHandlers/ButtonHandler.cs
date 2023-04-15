@@ -1,4 +1,5 @@
 ﻿using BeeJet.Bot.Commands;
+
 using BeeJet.Bot.Extensions;
 using Discord.Commands;
 using Discord.WebSocket;
