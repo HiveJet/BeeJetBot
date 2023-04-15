@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BeeJet.Bot.Commands.Sources;
-using BeeJet.Bot.Extensions;
+﻿using BeeJet.Bot.Extensions;
 using BeeJet.Bot.Logging;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 
 namespace BeeJet.Bot.ClientHandlers

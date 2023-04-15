@@ -1,11 +1,5 @@
-﻿using Steam.Models.DOTA2;
-using SteamWebAPI2.Interfaces;
+﻿using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BeeJet.Bot.Services
 {

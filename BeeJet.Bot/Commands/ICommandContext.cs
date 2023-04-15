@@ -1,9 +1,8 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 
 namespace BeeJet.Bot.Commands
 {
-    internal interface ICommandHandler
+    internal interface ICommandContext
     {
         public SocketGuild Guild { get;  }
 

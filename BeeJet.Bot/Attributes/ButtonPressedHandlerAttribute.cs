@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BeeJet.Bot
+﻿namespace BeeJet.Bot
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class ButtonPressedHandlerAttribute : Attribute
