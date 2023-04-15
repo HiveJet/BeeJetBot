@@ -37,8 +37,8 @@ namespace BeeJet.Bot.ClientHandlers
 
         internal async Task SlashCommandExecuted(SocketSlashCommand slashCommandArguments)
         {
-            SlashCommandContext context = new SlashCommandContext(slashCommandArguments);
-            await context.Initialize(_client);
+            SlashCommandContext context = new SlashCommandContext(slashCommandArguments, _client);
+            await context.Initialize();
             ExecuteSlashCommand(slashCommandArguments.CommandName, context);
         }
 
@@ -47,14 +47,12 @@ namespace BeeJet.Bot.ClientHandlers
             var commandHandler = _commandMethods.FirstOrDefault(b => b.CommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase));
             if (commandHandler.ClassType != null)
             {
-                var context = new SlashCommandContext(slashCommandArguments, _client);
                 using (var scope = _serviceProvider.CreateBeeJetBotResponseScope(context))
                 {
                     var handlerInstance = scope.ServiceProvider.GetService(commandHandler.ClassType) as CommandSource;
                     if (handlerInstance != null)
                     {
                         handlerInstance.Context = context;
-                        await handlerInstance.Context.Initialize();
                         commandHandler.Method.Invoke(handlerInstance, null);
                     }
                 }
