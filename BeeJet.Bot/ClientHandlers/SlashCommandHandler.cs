@@ -1,4 +1,5 @@
 ﻿using BeeJet.Bot.Attributes;
+using BeeJet.Bot.Commands;
 using BeeJet.Bot.Commands.Handlers;
 using BeeJet.Bot.Extensions;
 using Discord;
@@ -20,15 +21,17 @@ namespace BeeJet.Bot.ClientHandlers
         private List<(Type ClassType, MethodInfo Method, string CommandName)> GetCommandMethods()
         {
             var commandSources = GetCommandSourceTypes();
-            return commandSources.SelectMany(c => c.GetMethods()
-                                                .Where(m =>
-                                                m.GetCustomAttribute<BeeJetBotSlashCommandAttribute>() != null
-                                                ).Select(m => (ClassType: c, Method: m, CommandName: m.GetCustomAttribute<BeeJetBotSlashCommandAttribute>().CommandName))).ToList();
+            return commandSources.SelectMany(commandSourceType => commandSourceType.GetMethods()
+                                                .Where(method =>
+                                                method.GetCustomAttribute<BeeJetBotSlashCommandAttribute>() != null
+                                                &&
+                                                method.ReturnType == typeof(Task)
+                                                ).Select(method => (ClassType: commandSourceType, Method: method, CommandName: method.GetCustomAttribute<BeeJetBotSlashCommandAttribute>().CommandName))).ToList();
         }
 
         public static IEnumerable<Type> GetCommandSourceTypes()
         {
-            var type = typeof(ICommandSource);
+            var type = typeof(CommandSource);
             return AppDomain.CurrentDomain.GetAssemblies()
                                .SelectMany(s => s.GetTypes())
                                .Where(p => type.IsAssignableFrom(p) && !p.IsAbstract);
@@ -36,21 +39,25 @@ namespace BeeJet.Bot.ClientHandlers
 
         internal async Task SlashCommandExecuted(SocketSlashCommand slashCommandArguments)
         {
-            SlashCommandContext context = new SlashCommandContext(slashCommandArguments);
-            await context.Initialize(_client);
-            ExecuteSlashCommand(slashCommandArguments.CommandName, context);
+            SlashCommandContext context = new SlashCommandContext(slashCommandArguments, _client);
+            await context.Initialize();
+            await ExecuteSlashCommandAsync(slashCommandArguments.CommandName, context);
         }
 
-        private void ExecuteSlashCommand(string commandName, SlashCommandContext context)
+        private async  Task ExecuteSlashCommandAsync(string commandName, SlashCommandContext context)
         {
-            var commandHandler = _commandMethods.FirstOrDefault(b => b.CommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase));
-            if (commandHandler.ClassType != null)
+            var commandHandler = _commandMethods.FirstOrDefault(commandMethod => commandMethod.CommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase));
+            if (commandHandler.ClassType == null)
             {
-                var handlerInstance = _serviceProvider.GetService(commandHandler.ClassType);
+                return;
+            }
+            using (var scope = _serviceProvider.CreateBeeJetBotResponseScope(context))
+            {
+                var handlerInstance = scope.ServiceProvider.GetService(commandHandler.ClassType) as CommandSource;
                 if (handlerInstance != null)
                 {
-
-                    commandHandler.Method.Invoke(handlerInstance, new object[] { context });
+                    handlerInstance.Context = context;
+                    await (Task)commandHandler.Method.Invoke(handlerInstance, null);
                 }
             }
         }
@@ -81,7 +88,7 @@ namespace BeeJet.Bot.ClientHandlers
             guildCommand.WithDescription(attribute.Description);
             if (!string.IsNullOrWhiteSpace(attribute.BuilderMethod))
             {
-                var builderMethod = commandSource.ClassType.GetMethods().FirstOrDefault(b => b.Name == attribute.BuilderMethod && b.GetParameters().Length == 1 && b.GetParameters()[0].ParameterType == typeof(SlashCommandBuilder));
+                var builderMethod = commandSource.ClassType.GetMethods().FirstOrDefault(method => method.Name == attribute.BuilderMethod && method.GetParameters().Length == 1 && method.GetParameters()[0].ParameterType == typeof(SlashCommandBuilder));
                 if (builderMethod != null)
                 {
                     builderMethod.Invoke(_serviceProvider.GetService(commandSource.ClassType), new object[] { guildCommand });

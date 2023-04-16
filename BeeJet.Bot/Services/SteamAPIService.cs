@@ -15,14 +15,14 @@ namespace BeeJet.Bot.Services
         {
             var steamInterface = _webInterfaceFactory.CreateSteamWebInterface<PlayerService>(new HttpClient());
             var playerGames = (await steamInterface.GetRecentlyPlayedGamesAsync(userId)).Data;
-            return playerGames.RecentlyPlayedGames.Select(b => b.Name).ToArray();
+            return playerGames.RecentlyPlayedGames.Select(gameInfo => gameInfo.Name).ToArray();
         }
 
         public async Task<string[]> GetGamesFromSteamUser(ulong userId)
         {
             var steamInterface = _webInterfaceFactory.CreateSteamWebInterface<PlayerService>(new HttpClient());
             var playerGames = (await steamInterface.GetOwnedGamesAsync(userId, true, true)).Data;
-            return playerGames.OwnedGames.Select(b => b.Name).ToArray();
+            return playerGames.OwnedGames.Select(gameInfo => gameInfo.Name).ToArray();
         }
     }
 }
