@@ -22,9 +22,7 @@ namespace BeeJet.Tests
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
 
-            var context = Substitute.For<SlashCommandContext>(commandInteraction, client);
-            context.Guild = guild;
-            context.User = user;
+            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user, guild);
 
             await commandHandler.AddGameAsync("TestGame", "Test", context);
             await context.SlashCommandInteraction.Received().RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
@@ -57,10 +55,8 @@ namespace BeeJet.Tests
             var commandHandler = new AddGameCommandHandler(service);
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
-
-            var context = Substitute.For<SlashCommandContext>(commandInteraction, client);
-            context.Guild = guild;
-            context.User = user;
+          
+            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user, guild);
 
             //I need a SocketCategoryChannel which I can't substitute or create
             await commandHandler.AddGameAsync("TestGame", "Test", context);
@@ -83,9 +79,7 @@ namespace BeeJet.Tests
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
 
-            var context = Substitute.For<SlashCommandContext>(commandInteraction, client);
-            context.Guild = guild;
-            context.User = user;
+            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user,guild);
 
             await commandHandler.AddGameAsync(gameName, "Test", context);
             await context.SlashCommandInteraction.Received().RespondAsync("Channel created", ephemeral: true);
@@ -113,5 +107,8 @@ namespace BeeJet.Tests
             Assert.That(stringType, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[1].Type));
             Assert.IsFalse(((List<ApplicationCommandOptionProperties>)properties.Options)[1].IsRequired);
         }
+      
     }
+
+
 }

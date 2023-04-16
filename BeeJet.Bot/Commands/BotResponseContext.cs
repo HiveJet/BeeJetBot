@@ -5,12 +5,12 @@ namespace BeeJet.Bot.Commands
 {
     public abstract class BotResponseContext : IResponseContext
     {
-        public IGuild Guild { get; internal set; }
+        public IGuild Guild { get; protected set; }
 
-        public IChannel Channel { get; internal set; }
-        public IUserMessage Message { get; internal set; }
+        public IChannel Channel { get; protected set; }
+        public IUserMessage Message { get; protected set; }
 
-        public IUser User { get; internal set; }
+        public IUser User { get; protected set; }
 
         public abstract Task Initialize();
     }
