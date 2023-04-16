@@ -11,27 +11,27 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         {
             if (TryGetGameName(Context.Message, out string gameName))
             {
-                await JoinGameAsync(Context.Message, Context.User, gameName);
+                await JoinGameAsync(gameName);
             }
             await Context.ComponentInteraction.DeferAsync();
         }
 
-        private async Task JoinGameAsync(IUserMessage message, IUser user, string gameName)
+        private async Task JoinGameAsync(string gameName)
         {
-            SocketTextChannel gameChannel = GetGameChannel(message, gameName);
+            SocketTextChannel gameChannel = GetGameChannel(Context.Message, gameName);
             if (gameChannel != null)
             {
-                await GivePermissionToJoinChannel(user, gameChannel);
+                await GivePermissionToJoinChannel(gameChannel);
             }
         }
 
-        public static async Task GivePermissionToJoinChannel(IUser user, SocketTextChannel gameChannel)
+        public async Task GivePermissionToJoinChannel(SocketTextChannel gameChannel)
         {
-            if (!gameChannel.Users.Any(channelUser => channelUser.Id == user.Id))
+            if (!gameChannel.Users.Any(channelUser => channelUser.Id == Context.User.Id))
             {
                 var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
-                await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
-                await gameChannel.SendMessageAsync($"Welcome <@{user.Id}>");
+                await gameChannel.AddPermissionOverwriteAsync(Context.User, permissionOverrides);
+                await gameChannel.SendMessageAsync($"Welcome <@{Context.User.Id}>");
             }
         }
 
