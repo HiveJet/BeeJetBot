@@ -5,7 +5,6 @@ using BeeJet.Bot.Services;
 using BeeJet.Tests.Fixtures;
 using Discord;
 using NSubstitute;
-using System.Threading.Channels;
 
 namespace BeeJet.Tests
 {
