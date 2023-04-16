@@ -19,6 +19,7 @@ namespace BeeJet.Bot.Commands.Handlers
             if(!GuildManager.IsAdmin(User))
             {
                 await MessageChannel.SendMessageAsync($"You don't have permission to create game channels");
+                return;
             }
 
             var gameChannelExists = await GuildManager.ChannelExistsAsync(gameName);

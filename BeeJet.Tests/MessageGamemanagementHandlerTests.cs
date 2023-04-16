@@ -22,6 +22,7 @@ namespace BeeJet.Tests
             var gameHandler = new MessageGameManagementHandler(messageSubstitute, guildManagerSubstitute);
             await gameHandler.AddGameAsync("TestChannel");
             await gameHandler.MessageChannel.Received().SendMessageAsync("This game already has a channel");
+            await gameHandler.GuildManager.DidNotReceive().CreateGameChannelAsync("TestChannel");
         }
 
         [Test]
@@ -37,6 +38,7 @@ namespace BeeJet.Tests
             var gameHandler = new MessageGameManagementHandler(messageSubstitute, guildManagerSubstitute);
             await gameHandler.AddGameAsync("TestChannel");
             await gameHandler.MessageChannel.Received().SendMessageAsync("You don't have permission to create game channels");
+            await gameHandler.GuildManager.DidNotReceive().ChannelExistsAsync("TestChannel");
         }
 
         [Test]
@@ -54,6 +56,7 @@ namespace BeeJet.Tests
             var gameHandler = new MessageGameManagementHandler(messageSubstitute, guildManagerSubstitute);
             await gameHandler.AddGameAsync("TestChannel");
             await gameHandler.MessageChannel.Received().SendMessageAsync("Unable to create game channel for TestChannel");
+            await gameHandler.MessageChannel.DidNotReceive().SendMessageAsync("This is the channel for TestChannel");
         }
 
         [Test]
@@ -70,7 +73,7 @@ namespace BeeJet.Tests
             guildManagerSubstitute.IsAdmin(Arg.Any<IGuildUser>()).Returns(true);
             guildManagerSubstitute.ChannelExistsAsync(Arg.Any<string>()).Returns(false);
             guildManagerSubstitute.CreateGameChannelAsync(Arg.Any<string>()).Returns(channelSubsitute);
-            guildManagerSubstitute.GetGameListChannelAsync().Returns(gameListChannelSubstitute);
+            guildManagerSubstitute.GetMainGameListChannelAsync().Returns(gameListChannelSubstitute);
 
             var gameHandler = new MessageGameManagementHandler(messageSubstitute, guildManagerSubstitute);
             await gameHandler.AddGameAsync("TestChannel");

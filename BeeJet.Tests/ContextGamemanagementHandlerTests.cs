@@ -1,7 +1,7 @@
-﻿using BeeJet.Bot.Commands.Handlers;
+﻿using BeeJet.Bot.Commands;
+using BeeJet.Bot.Commands.Handlers;
 using BeeJet.Bot.Interfaces;
 using Discord;
-using Discord.Commands;
 using NSubstitute;
 
 namespace BeeJet.Tests
@@ -22,6 +22,7 @@ namespace BeeJet.Tests
             var gameHandler = new ContextGameManagementHandler(contextSubstitute, guildManagerSubstitute);
             await gameHandler.AddGameAsync("TestChannel");
             await gameHandler.MessageChannel.Received().SendMessageAsync("This game already has a channel");
+            await gameHandler.GuildManager.DidNotReceive().CreateGameChannelAsync("TestChannel");
         }
 
         [Test]
@@ -37,6 +38,7 @@ namespace BeeJet.Tests
             var gameHandler = new ContextGameManagementHandler(contextSubstitute, guildManagerSubstitute);
             await gameHandler.AddGameAsync("TestChannel");
             await gameHandler.MessageChannel.Received().SendMessageAsync("You don't have permission to create game channels");
+            await gameHandler.GuildManager.DidNotReceive().ChannelExistsAsync("TestChannel");
         }
     }
 }
