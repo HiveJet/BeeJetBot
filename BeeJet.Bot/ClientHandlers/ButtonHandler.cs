@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace BeeJet.Bot.ClientHandlers
 {
-    internal class ButtonHandler : BaseClientHandler
+    public class ButtonHandler : BaseClientHandler
     {
         private readonly List<(ButtonPressedHandlerAttribute Attribute, MethodInfo Method, Type InstanceType)> _handlers;
 

@@ -3,7 +3,7 @@ using Discord.WebSocket;
 
 namespace BeeJet.Bot.ClientHandlers
 {
-    internal class MessageHandler : BaseClientHandler
+    public class MessageHandler : BaseClientHandler
     {
         //TODO:service provider should not be a parameter
         public MessageHandler(DiscordSocketClient client, CommandService service, IServiceProvider serviceProvider)

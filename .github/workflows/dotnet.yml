@@ -15,5 +15,5 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release
 
-    #- name: Test with dotnet
-    #  run: dotnet test
+    - name: Test with dotnet
+      run: dotnet test

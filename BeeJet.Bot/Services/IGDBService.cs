@@ -12,7 +12,7 @@ namespace BeeJet.Bot.Services
         }
 
 
-        public async Task<GameInfo> GetGameInfoAsync(string gameName)
+        public virtual async Task<GameInfo> GetGameInfoAsync(string gameName)
         {
             var games = await _igdbClient.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: $"fields id,name,url,cover.*,summary,websites.*; search \"{gameName}\"; limit 2;");
             var game = games.FirstOrDefault(gameInfo => gameInfo.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase));

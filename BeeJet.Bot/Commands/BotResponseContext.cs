@@ -1,8 +1,9 @@
-﻿using Discord;
+﻿using BeeJet.Bot.Interfaces;
+using Discord;
 
 namespace BeeJet.Bot.Commands
 {
-    public abstract class BotResponseContext
+    public abstract class BotResponseContext : IResponseContext
     {
         public IGuild Guild { get; protected set; }
 
