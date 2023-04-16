@@ -4,17 +4,10 @@ using Discord.WebSocket;
 
 namespace BeeJet.Bot.Commands
 {
-    public class SlashCommandContext : IBotResponseContext
+    public class SlashCommandContext : BotResponseContext
     {
         public ISlashCommandInteraction SlashCommandInteraction { get; }
 
-        public IGuild Guild { get; set; }
-
-        public IChannel Channel { get; set; }
-
-        public IUserMessage Message { get; }
-
-        public IUser User { get; set; }
         public IDiscordClient Client { get; private set; }
 
         public SlashCommandContext()
@@ -29,7 +22,7 @@ namespace BeeJet.Bot.Commands
             Client = client;
         }
 
-        public virtual async Task Initialize()
+        public override async Task Initialize()
         {
             if (SlashCommandInteraction.GuildId.HasValue)
             {

@@ -3,17 +3,10 @@ using Discord;
 
 namespace BeeJet.Bot.Commands
 {
-    public class ButtonPressedContext : IBotResponseContext
+    public class ButtonPressedContext : BotResponseContext
     {
         public IComponentInteraction ComponentInteraction { get; }
 
-        public IGuild Guild { get; set; }
-
-        public IChannel Channel { get; set; }
-
-        public IUserMessage Message { get; }
-
-        public IUser User { get; set; }
         public IDiscordClient Client { get; private set; }
 
         public ButtonPressedContext()
@@ -28,7 +21,7 @@ namespace BeeJet.Bot.Commands
             Client = client;
         }
 
-        public virtual async Task Initialize()
+        public override async Task Initialize()
         {
             if (ComponentInteraction.GuildId.HasValue)
             {

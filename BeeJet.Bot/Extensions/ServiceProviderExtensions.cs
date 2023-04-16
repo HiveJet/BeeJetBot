@@ -5,7 +5,7 @@ namespace BeeJet.Bot.Extensions
 {
     internal static class ServiceProviderExtensions
     {
-        public static AsyncServiceScope CreateBeeJetBotResponseScope(this IServiceProvider serviceProvider, IBotResponseContext context)
+        public static AsyncServiceScope CreateBeeJetBotResponseScope(this IServiceProvider serviceProvider, BotResponseContext context)
         {
             var scope = serviceProvider.CreateAsyncScope();
             //TODO: Fill context in all general scope DI services

@@ -28,14 +28,20 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         public async Task SlashCommandExecuted()
         {
             var gameName = (string)Context.SlashCommandInteraction.Data.Options.First().Value;
+            string categoryName = GetCategoryName();
+            await AddGameAsync(gameName, categoryName, Context);
+        }
+
+        private string GetCategoryName()
+        {
             var categoryName = "Gaming";//Default name
             var category = Context.SlashCommandInteraction.Data.Options.FirstOrDefault(commandOptionData => commandOptionData.Name == "category");
             if (category != null)
             {
                 categoryName = (string)category.Value;
-
             }
-            await AddGameAsync(gameName, categoryName, Context);
+
+            return categoryName;
         }
 
         public async Task AddGameAsync(string game, string categoryName, SlashCommandContext context)
