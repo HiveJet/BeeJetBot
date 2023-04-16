@@ -121,5 +121,13 @@ namespace BeeJet.Bot.Managers
             return true;
         }
 
+        public async Task<IGuildUser> GetGuildUserAsync(IUser user)
+        {
+            if (user is IGuildUser guildUser)
+            {
+                return guildUser;
+            }
+            return await _guild.GetUserAsync(user.Id);
+        }
     }
 }

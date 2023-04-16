@@ -9,8 +9,8 @@ namespace BeeJet.Bot.Commands.Handlers
         internal const string JointButtonId = "join-game-id";
         internal const string LeaveButtonId = "leave-game-id";
 
-        public BaseGameManagementHandler(IGuildManager guildManager)
-            :base(guildManager)
+        public BaseGameManagementHandler(IGuildManager guildManager, IUser user)
+            : base(guildManager, user)
         {            
         }
 

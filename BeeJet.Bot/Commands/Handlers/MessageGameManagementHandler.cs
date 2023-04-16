@@ -10,14 +10,12 @@ namespace BeeJet.Bot.Commands.Handlers
         private IUserMessage _userMessage;
 
         public MessageGameManagementHandler(IUserMessage message, IGuildManager guildManager)
-            :base (guildManager)
+            :base (guildManager, message.Author)
         {
             _userMessage = message;
         }
 
         public override IMessageChannel MessageChannel => _userMessage.Channel;
-
-        public override IGuildUser User => (IGuildUser)_userMessage.Author;
 
         public async Task<bool> JoinGamePressed()
         {

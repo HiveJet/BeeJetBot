@@ -16,6 +16,7 @@ namespace BeeJet.Bot.Interfaces
         public Task<IRole> AddAdminRoleAsync();
         public IRole GetAdminRole();
         public bool IsAdmin(IGuildUser user);
+        public Task<IGuildUser> GetGuildUserAsync(IUser user);
 
         public Task<ITextChannel> CreateMainGameListChannel();
         public Task<ITextChannel> CreateGameChannelAsync(string channelName);

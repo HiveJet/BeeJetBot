@@ -7,15 +7,21 @@ namespace BeeJet.Bot.Commands.Handlers
     public abstract class BaseHandler
     {
         public IGuildManager GuildManager { get; }
-        public abstract IMessageChannel MessageChannel { get; }// => Context is not null ? Context.Channel : UserMessage?.Channel;
+        public abstract IMessageChannel MessageChannel { get; }
         public IGuildChannel GuidChannel => (IGuildChannel)MessageChannel;
 
-        public abstract IGuildUser User { get; }// => (IGuildUser)(Context is not null ? Context.User : (IGuildUser)UserMessage.Author);
+        public IGuildUser User { get; private set; }
 
 
-        public BaseHandler(IGuildManager guildManager)
+        public BaseHandler(IGuildManager guildManager, IUser user)
         {
             GuildManager = guildManager;
+            Task.Run(() => InitializeAsync(user));
+        }
+
+        private async Task InitializeAsync(IUser user)
+        {
+            User = await GuildManager.GetGuildUserAsync(user);
         }
     }
 }

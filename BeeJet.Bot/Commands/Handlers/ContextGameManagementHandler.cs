@@ -10,13 +10,12 @@ namespace BeeJet.Bot.Commands.Handlers
         private ICommandContext _context;
 
         public ContextGameManagementHandler(ICommandContext context, IGuildManager guildManager)
-            :base(guildManager)
+            :base(guildManager, context.User)
         {
             _context = context;
         }
 
         public override IMessageChannel MessageChannel => _context.Channel;
 
-        public override IGuildUser User => (IGuildUser)_context.User;
     }
 }
