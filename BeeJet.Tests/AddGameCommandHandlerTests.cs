@@ -1,5 +1,4 @@
 ﻿using BeeJet.Bot;
-using BeeJet.Bot.Commands;
 using BeeJet.Bot.Commands.Handlers.GameManagement;
 using BeeJet.Bot.Services;
 using BeeJet.Tests.Fixtures;
@@ -32,9 +31,7 @@ namespace BeeJet.Tests
         [Test]
         public async Task AddGameAsync_WithExistingGameChannel_SendsGameAlreadyHasChannelMessage()
         {
-            var role = Substitute.For<IRole>();
-            role.Id.Returns((ulong)1);
-            role.Name.Returns(BeeJetBot.BOT_ADMIN_ROLE_NAME);
+            var role = RoleFixture.AdminRole;
 
             var user = Substitute.For<IGuildUser>();
             user.RoleIds.Returns(new ulong[] { (ulong)1 });
@@ -99,16 +96,64 @@ namespace BeeJet.Tests
             commandHandler.RegisterOptions(builder);
             var properties = builder.Build();
 
-            Assert.That(gameOptionName, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[0].Name));
-            Assert.That(stringType, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[0].Type));
-            Assert.IsTrue(((List<ApplicationCommandOptionProperties>)properties.Options)[0].IsRequired);
+            Assert.Multiple(() =>
+            {
+                Assert.That(gameOptionName, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[0].Name));
+                Assert.That(stringType, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[0].Type));
+                Assert.IsTrue(((List<ApplicationCommandOptionProperties>)properties.Options)[0].IsRequired);
+            });
 
-            Assert.That(categoryOptionName, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[1].Name));
-            Assert.That(stringType, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[1].Type));
-            Assert.IsFalse(((List<ApplicationCommandOptionProperties>)properties.Options)[1].IsRequired);
+            Assert.Multiple(() =>
+            {
+                Assert.That(categoryOptionName, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[1].Name));
+                Assert.That(stringType, Is.EqualTo(((List<ApplicationCommandOptionProperties>)properties.Options)[1].Type));
+                Assert.IsFalse(((List<ApplicationCommandOptionProperties>)properties.Options)[1].IsRequired);
+            });
         }
-      
+
+        [Test]
+        public void GetCategoryName_WithoutCategoryOption_ReturnsDefaultCategoryName()
+        {
+            var defaultCategory = "Gaming";
+
+            var user = UserFixture.UserWithAdminRole;
+            var guild = GuildFixture.GuildWithAdminRole;
+
+            var commandInteraction = Substitute.For<ISlashCommandInteraction>();
+            var client = Substitute.For<IDiscordClient>();
+            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user, guild);
+
+            var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
+            var commandHandler = new AddGameCommandHandler(service);
+            commandHandler.Context = context;
+
+            Assert.That(defaultCategory, Is.EqualTo(commandHandler.GetCategoryName()));
+        }
+
+        [Test]
+        public void GetCategoryName_WithCategoryOption_ReturnsDefaultCategoryName()
+        {
+            var setCategoryName = "Test";
+
+            var user = UserFixture.UserWithAdminRole;
+            var guild = GuildFixture.GuildWithAdminRole;
+
+            var commandInteraction = Substitute.For<ISlashCommandInteraction>();
+            var client = Substitute.For<IDiscordClient>();
+
+            var applicationOption = Substitute.For<IApplicationCommandInteractionDataOption>();
+            applicationOption.Name.Returns("category");
+            applicationOption.Value.Returns(setCategoryName);
+            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user, guild);
+            context.SlashCommandInteraction.Data.Options.Returns(new IApplicationCommandInteractionDataOption[] { applicationOption });
+
+            var builder = new SlashCommandBuilder();
+            var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
+            var commandHandler = new AddGameCommandHandler(service);
+            commandHandler.Context = context;
+            commandHandler.RegisterOptions(builder);
+
+            Assert.That(setCategoryName, Is.EqualTo(commandHandler.GetCategoryName()));
+        }
     }
-
-
 }
