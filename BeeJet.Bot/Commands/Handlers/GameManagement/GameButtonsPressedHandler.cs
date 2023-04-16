@@ -21,17 +21,17 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             SocketTextChannel gameChannel = GetGameChannel(Context.Message, gameName);
             if (gameChannel != null)
             {
-                await GivePermissionToJoinChannel(gameChannel);
+                await GivePermissionToJoinChannel(Context.User, gameChannel);
             }
         }
 
-        public async Task GivePermissionToJoinChannel(SocketTextChannel gameChannel)
+        public static async Task GivePermissionToJoinChannel(IUser user, SocketTextChannel gameChannel)
         {
-            if (!gameChannel.Users.Any(channelUser => channelUser.Id == Context.User.Id))
+            if (!gameChannel.Users.Any(channelUser => channelUser.Id == user.Id))
             {
                 var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
-                await gameChannel.AddPermissionOverwriteAsync(Context.User, permissionOverrides);
-                await gameChannel.SendMessageAsync($"Welcome <@{Context.User.Id}>");
+                await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
+                await gameChannel.SendMessageAsync($"Welcome <@{user.Id}>");
             }
         }
 
