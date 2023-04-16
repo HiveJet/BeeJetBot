@@ -2,7 +2,7 @@
 
 namespace BeeJet.Bot.Commands
 {
-    public interface IBotReponseContext
+    public interface IBotResponseContext
     {
         public IGuild Guild { get;  }
 

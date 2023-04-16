@@ -3,7 +3,7 @@ using Discord;
 
 namespace BeeJet.Bot.Commands
 {
-    public class ButtonPressedContext : IBotReponseContext
+    public class ButtonPressedContext : IBotResponseContext
     {
         public IComponentInteraction ComponentInteraction { get; }
 

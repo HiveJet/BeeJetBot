@@ -25,7 +25,7 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
 
             var games = await _steamAPI.GetGamesFromSteamUser(steamId);
             var gamesWithChannel = (await Context.Guild.GetChannelsAsync()).OfType<SocketTextChannel>().Where(b => games.Any(c => c.Equals(b.Name, StringComparison.OrdinalIgnoreCase)));
-            gamesWithChannel = gamesWithChannel.Where(b => !b.Users.Any(u => u.Id == Context.SlashCommandInteraction.User.Id));
+            gamesWithChannel = gamesWithChannel.Where(discordChannel => !discordChannel.Users.Any(user => user.Id == Context.SlashCommandInteraction.User.Id));
             if (!gamesWithChannel.Any())
             {
                 await Context.SlashCommandInteraction.RespondAsync("No channels to join");

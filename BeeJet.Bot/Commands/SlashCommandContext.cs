@@ -4,7 +4,7 @@ using Discord.WebSocket;
 
 namespace BeeJet.Bot.Commands
 {
-    public class SlashCommandContext : IBotReponseContext
+    public class SlashCommandContext : IBotResponseContext
     {
         public ISlashCommandInteraction SlashCommandInteraction { get; }
 
