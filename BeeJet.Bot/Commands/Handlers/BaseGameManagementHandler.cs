@@ -36,10 +36,10 @@ namespace BeeJet.Bot.Commands.Handlers
             }
             await createdChannel.SendMessageAsync($"This is the channel for {gameName}");
 
-            var gameListChannel = await GuildManager.GetGameListChannelAsync();
+            var gameListChannel = await GuildManager.GetMainGameListChannelAsync();
             if(gameListChannel is null)
             {
-                gameListChannel = await GuildManager.CreateGameListChannelAsync();
+                gameListChannel = await GuildManager.CreateMainGameListChannel();
             }
             await CreateNewGameChannelNotificationAsync(gameName, gameListChannel);
         }

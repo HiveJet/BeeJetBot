@@ -1,4 +1,5 @@
 ﻿using BeeJet.Bot.Extensions;
+using Discord;
 using Discord.WebSocket;
 
 namespace BeeJet.Bot.Commands.Handlers
@@ -11,7 +12,7 @@ namespace BeeJet.Bot.Commands.Handlers
 
         public ISocketMessageChannel Channel { get; set; }
 
-        public SocketUser User { get; set; }
+        public IUser User { get; set; }
         public DiscordSocketClient Client { get; private set; }
 
         public SlashCommandContext(SocketSlashCommand context)

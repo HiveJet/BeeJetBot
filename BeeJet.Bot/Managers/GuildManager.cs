@@ -6,8 +6,7 @@ namespace BeeJet.Bot.Managers
 {
     public class GuildManager : IGuildManager
     {
-        private const string _adminRoleName = "BeeJetBotAdmin";
-        private const string _gameListChannelName = "Game-channels";
+        private const string _mainGameCategoryName = "Game-channels";
 
         public IGuild _guild { get; }
 
@@ -20,11 +19,6 @@ namespace BeeJet.Bot.Managers
         {
             var channels = await GetChannelsAsync();
             return channels.Any(channel => channel.Name.Equals(channelName, StringComparison.OrdinalIgnoreCase));
-        }
-
-        public async Task<bool> GameListChannelExistsAsync()
-        {
-            return await ChannelExistsAsync(_gameListChannelName);
         }
 
         public async Task<ITextChannel> GetTextChannelAsync(string channelName)
@@ -52,9 +46,14 @@ namespace BeeJet.Bot.Managers
                 .FirstOrDefault(channel => channel.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
         }
 
-        public async Task<ITextChannel> GetGameListChannelAsync()
+        public async Task<bool> MainGameListChannelExistsAsync()
         {
-            return await GetTextChannelAsync(_gameListChannelName);
+            return await ChannelExistsAsync(_mainGameCategoryName);
+        }
+
+        public async Task<ITextChannel> GetMainGameListChannelAsync()
+        {
+            return await GetTextChannelAsync(_mainGameCategoryName);
         }
 
         protected async Task<IReadOnlyCollection<IGuildChannel>> GetChannelsAsync()
@@ -77,6 +76,11 @@ namespace BeeJet.Bot.Managers
             return _guild.Roles.FirstOrDefault(role => role.Name == BeeJetBot.BOT_ADMIN_ROLE_NAME);
         }
 
+        public async Task<ITextChannel> CreateMainGameListChannel()
+        {
+            return await CreateGameChannelAsync(_mainGameCategoryName);
+        }
+
         public async Task<ITextChannel> CreateGameChannelAsync(string channelName)
         {
             return await CreateGameChannelAsync(channelName, null);
@@ -97,7 +101,7 @@ namespace BeeJet.Bot.Managers
 
         public async Task<ITextChannel> CreateCategoryChannelAsync()
         {
-            var createdChannel = await _guild.CreateTextChannelAsync(_gameListChannelName);
+            var createdChannel = await _guild.CreateTextChannelAsync(_mainGameCategoryName);
             var permissionOverrides = new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny);
             await createdChannel.AddPermissionOverwriteAsync(_guild.EveryoneRole, permissionOverrides);
             return createdChannel;
