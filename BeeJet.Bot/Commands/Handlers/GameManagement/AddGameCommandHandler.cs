@@ -51,19 +51,32 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
                 await context.SlashCommandInteraction.RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
                 return;
             }
-
-            var categoryChannel = await GetOrCreateCategoryChannelAsync(categoryName, context);
-            var gameInfo = await _igdbService.GetGameInfoAsync(game);
+            var gameInfo = await _igdbService.GetGameInfoAsync(game.Replace("-", " "));
             if (gameInfo != null)
             {
                 game = gameInfo.Name;
             }
-            if (categoryChannel is SocketCategoryChannel socketParentCategory && socketParentCategory.Channels.Any(channel => channel.Name.Equals(game, StringComparison.OrdinalIgnoreCase) || channel.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase)))
-            {
-                await context.SlashCommandInteraction.RespondAsync($"This game already has a channel", ephemeral: true);
-                return;
-            }
+
             var gameInfoEmbed = CreateGameInfoEmbed(gameInfo);
+
+            var categoryChannel = await GetCategoryChannelAsync(categoryName, context);
+            if (categoryChannel != null)
+            {
+                if ((await categoryChannel.Guild.GetChannelsAsync())
+                    .OfType<INestedChannel>()
+                    .Any(channel => channel.CategoryId == categoryChannel.Id 
+                        && (channel.Name.Equals(game, StringComparison.OrdinalIgnoreCase) 
+                        || channel.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase))))
+                {
+                    await context.SlashCommandInteraction.RespondAsync($"This game already has a channel", ephemeral: true);
+                    return;
+                }
+            }
+            else
+            {
+                categoryChannel = await CreateCategoryChannelAsync(categoryName, context);
+            }
+
             await AddToGameListChannelAsync(game, categoryChannel, gameInfoEmbed, context);
 
             var channel = await context.Guild.CreateTextChannelAsync(game.Trim().Replace(" ", "-"), (properties) => properties.CategoryId = categoryChannel.Id);
@@ -75,14 +88,14 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         }
 
-        private async Task<ICategoryChannel> GetOrCreateCategoryChannelAsync(string categoryName, SlashCommandContext context)
+        private static async Task<ICategoryChannel> CreateCategoryChannelAsync(string categoryName, SlashCommandContext context)
         {
-            ICategoryChannel parentChannel = (await context.Guild.GetChannelsAsync()).OfType<SocketCategoryChannel>().FirstOrDefault(channel => channel.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
-            if (parentChannel == null)
-            {
-                parentChannel = await context.Guild.CreateCategoryAsync(categoryName);
-            }
-            return parentChannel;
+            return await context.Guild.CreateCategoryAsync(categoryName);
+        }
+
+        private static async Task<ICategoryChannel> GetCategoryChannelAsync(string categoryName, SlashCommandContext context)
+        {
+            return (await context.Guild.GetChannelsAsync()).OfType<ICategoryChannel>().FirstOrDefault(channel => channel.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
         }
 
         private async Task AddToGameListChannelAsync(string game, ICategoryChannel categoryChannel, EmbedBuilder gameInfoEmbed, SlashCommandContext context)
@@ -123,8 +136,9 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private async Task<ITextChannel> AddOrGetGameListChannelAsync(ICategoryChannel categoryChannel, SlashCommandContext context)
         {
-            if (categoryChannel is not SocketCategoryChannel
-                || (categoryChannel is SocketCategoryChannel socketCategory && !socketCategory.Channels.Any(c => c.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase))))
+            if (!(await categoryChannel.Guild.GetChannelsAsync()).OfType<INestedChannel>().Any(channel => 
+            channel.CategoryId == categoryChannel.Id &&
+            channel.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase)))
             {
                 var gameListChannel = await context.Guild.CreateTextChannelAsync(ChannelName, (properties) => properties.CategoryId = categoryChannel.Id);
                 var permissionOverrides = new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny);

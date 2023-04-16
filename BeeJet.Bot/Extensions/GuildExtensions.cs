@@ -28,7 +28,7 @@ namespace BeeJet.Bot.Extensions
         public static async Task<ICategoryChannel> GetOrCreateCategory(this IGuild guild, string categoryName)
         {
             var channels = await guild.GetChannelsAsync();
-            ICategoryChannel parentChannel = channels.OfType<SocketCategoryChannel>().FirstOrDefault(b => b.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+            ICategoryChannel parentChannel = channels.OfType<ICategoryChannel>().FirstOrDefault(b => b.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
             if (parentChannel == null)
             {
                 parentChannel = await guild.CreateCategoryAsync(categoryName);
