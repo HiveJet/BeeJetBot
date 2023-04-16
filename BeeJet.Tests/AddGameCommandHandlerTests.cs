@@ -32,7 +32,6 @@ namespace BeeJet.Tests
         }
 
         [Test]
-        [Ignore("Disabled: Impossible to create or substitute a SocketCategoryChannel")]
         public async Task AddGameAsync_WithExistingGameChannel_SendsGameAlreadyHasChannelMessage()
         {
             var role = Substitute.For<IRole>();
@@ -43,13 +42,16 @@ namespace BeeJet.Tests
             user.RoleIds.Returns(new ulong[] { (ulong)1 });
 
             var categoryChannel = Substitute.For<ICategoryChannel>();
+            categoryChannel.Name.Returns("Test");
             categoryChannel.Id.Returns((ulong)1);
             var gameChannel = Substitute.For<INestedChannel>();
+            gameChannel.Name.Returns("TestGame");
             gameChannel.CategoryId.Returns((ulong)1);
 
             var guild = Substitute.For<IGuild>();
             guild.Roles.Returns(new IRole[] { role });
-            guild.GetChannelsAsync().Returns(new IGuildChannel[] { gameChannel });
+            guild.GetChannelsAsync().Returns(new IGuildChannel[] { gameChannel, categoryChannel });
+            categoryChannel.Guild.Returns(guild);
 
             var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
             var commandHandler = new AddGameCommandHandler(service);
@@ -62,7 +64,7 @@ namespace BeeJet.Tests
 
             //I need a SocketCategoryChannel which I can't substitute or create
             await commandHandler.AddGameAsync("TestGame", "Test", context);
-            await context.SlashCommandInteraction.Received().RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
+            await context.SlashCommandInteraction.Received().RespondAsync($"This game already has a channel", ephemeral: true);
         }
 
         [Test]

@@ -32,7 +32,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             await AddGameAsync(gameName, categoryName, Context);
         }
 
-        private string GetCategoryName()
+        public string GetCategoryName()
         {
             var categoryName = "Gaming";//Default name
             var category = Context.SlashCommandInteraction.Data.Options.FirstOrDefault(commandOptionData => commandOptionData.Name == "category");
