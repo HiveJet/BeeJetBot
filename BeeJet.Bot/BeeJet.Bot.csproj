@@ -27,4 +27,8 @@
       <_Parameter1>BeeJet.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Managers\" />
+  </ItemGroup>
 </Project>

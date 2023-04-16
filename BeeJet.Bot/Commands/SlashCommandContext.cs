@@ -10,11 +10,7 @@ namespace BeeJet.Bot.Commands
 
         public IDiscordClient Client { get; private set; }
 
-        public SlashCommandContext()
-        {
-        }
-
-        public SlashCommandContext(SocketSlashCommand context, IDiscordClient client)
+        public SlashCommandContext(ISlashCommandInteraction context, IDiscordClient client)
         {
             SlashCommandInteraction = context;
             User = SlashCommandInteraction.User;

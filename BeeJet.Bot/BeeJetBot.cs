@@ -14,7 +14,7 @@ namespace BeeJet.Bot
     {
         public const string BOT_NAME = "BeeJetBot";
         public const string BOT_ADMIN_ROLE_NAME = "BeeJetBotAdmin";
-
+        public const string BOT_MAIN_CHANNELLIST_NAME = "Game-channels";
         private readonly string _token;
 
         private readonly DiscordSocketClient _client;

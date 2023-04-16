@@ -13,7 +13,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         internal const string LeaveButtonId = "leave-game-id";
         private readonly IGDBService _igdbService;
 
-        public AddGameCommandHandler(Services.IGDBService igdbService)
+        public AddGameCommandHandler(IGDBService igdbService)
         {
             _igdbService = igdbService;
         }
@@ -46,8 +46,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         public async Task AddGameAsync(string game, string categoryName, SlashCommandContext context)
         {
-            ulong roleId = context.Guild.GetAdminRoleId();
-            if (!(context.User as IGuildUser).RoleIds.Contains(roleId))
+            if (!context.Guild.IsAdmin(context.User as IGuildUser))
             {
                 await context.SlashCommandInteraction.RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
                 return;
