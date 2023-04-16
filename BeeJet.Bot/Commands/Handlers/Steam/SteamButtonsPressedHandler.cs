@@ -1,21 +1,15 @@
-﻿using BeeJet.Bot.Commands.Sources;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Discord;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using BeeJet.Bot.Commands.Handlers.GameManagement;
 
 namespace BeeJet.Bot.Commands.Handlers.Steam
 {
-    internal class SteamButtonsPressedHandler : IButtonPressedHandler
+    public class SteamButtonsPressedHandler : IButtonPressedHandler
     {
 
         [ButtonPressedHandler("join-game-", startsWith: true)]
-        internal async Task JoinGamePressed(SocketMessageComponent component)
+        public async Task JoinGamePressed(SocketMessageComponent component)
         {
             var match = new Regex("join-game-([a-zA-Z0-9\\s]*)-------([a-zA-Z0-9-\\s]*)",  RegexOptions.Compiled).Match(component.Data.CustomId);
             if (match.Success)

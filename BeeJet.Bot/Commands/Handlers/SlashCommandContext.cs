@@ -1,13 +1,11 @@
 ﻿using BeeJet.Bot.Extensions;
-using Discord;
 using Discord.WebSocket;
-using System.Threading.Channels;
 
 namespace BeeJet.Bot.Commands.Handlers
 {
-    internal abstract class SlashCommandExecutedHandler : ICommandHandler
+    public class SlashCommandContext : ICommandContext
     {
-        public SocketSlashCommand Context { get; }
+        public SocketSlashCommand DiscordContext { get; }
 
         public SocketGuild Guild { get; set; }
 
@@ -16,23 +14,21 @@ namespace BeeJet.Bot.Commands.Handlers
         public SocketUser User { get; set; }
         public DiscordSocketClient Client { get; private set; }
 
-        public SlashCommandExecutedHandler(SocketSlashCommand context)
+        public SlashCommandContext(SocketSlashCommand context)
         {
-            Context = context;
-            Channel = Context.Channel;
-            User = Context.User;
+            DiscordContext = context;
+            Channel = DiscordContext.Channel;
+            User = DiscordContext.User;
         }
 
         public virtual async Task Initialize(DiscordSocketClient client)
         {
-            if (Context.GuildId.HasValue)
+            if (DiscordContext.GuildId.HasValue)
             {
-                Guild = client.GetGuild(Context.GuildId.Value);
+                Guild = client.GetGuild(DiscordContext.GuildId.Value);
             }
             await Guild.AddAdminRoleIfNeeded();
             Client = client;
         }
-
-        internal abstract Task SlashCommandExecuted();
     }
 }

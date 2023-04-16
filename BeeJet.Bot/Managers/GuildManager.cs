@@ -16,7 +16,7 @@ namespace BeeJet.Bot.Managers
             _guild = guild;
         }
 
-        public async Task<bool> ChannelExistsAsync(string channelName) 
+        public async Task<bool> ChannelExistsAsync(string channelName)
         {
             var channels = await GetChannelsAsync();
             return channels.Any(channel => channel.Name.Equals(channelName, StringComparison.OrdinalIgnoreCase));
@@ -34,6 +34,24 @@ namespace BeeJet.Bot.Managers
                 .FirstOrDefault(channel => channel.Name.Equals(channelName, StringComparison.OrdinalIgnoreCase));
         }
 
+        public async Task<ITextChannel> GetTextChannelAsync(ulong? channelId)
+        {
+            if (!channelId.HasValue)
+            {
+                return null;
+            }
+            var channels = await GetChannelsAsync();
+            return channels.OfType<ITextChannel>()
+                .FirstOrDefault(channel => channel.Id.Equals(channelId));
+        }
+
+        public async Task<ICategoryChannel> GetCategoryChannelAsync(string categoryName)
+        {
+            var channels = await GetChannelsAsync();
+            return channels.OfType<ICategoryChannel>()
+                .FirstOrDefault(channel => channel.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+        }
+
         public async Task<ITextChannel> GetGameListChannelAsync()
         {
             return await GetTextChannelAsync(_gameListChannelName);
@@ -46,28 +64,38 @@ namespace BeeJet.Bot.Managers
 
         public bool HasAdminRole()
         {
-            return _guild.Roles.Any(role => role.Name == _adminRoleName);
+            return _guild.Roles.Any(role => role.Name == BeeJetBot.BOT_ADMIN_ROLE_NAME);
         }
 
         public async Task<IRole> AddAdminRoleAsync()
         {
-            return await _guild.CreateRoleAsync(_adminRoleName, isMentionable: false);
+            return await _guild.CreateRoleAsync(BeeJetBot.BOT_ADMIN_ROLE_NAME, isMentionable: false);
         }
 
         public IRole GetAdminRole()
         {
-            return _guild.Roles.FirstOrDefault(role => role.Name == _adminRoleName);
+            return _guild.Roles.FirstOrDefault(role => role.Name == BeeJetBot.BOT_ADMIN_ROLE_NAME);
         }
 
         public async Task<ITextChannel> CreateGameChannelAsync(string channelName)
         {
-            var createdChannel = await _guild.CreateTextChannelAsync(channelName.Trim().Replace(" ", "-"));
+            return await CreateGameChannelAsync(channelName, null);
+        }
+
+        public async Task<ITextChannel> CreateGameChannelAsync(string channelName, Action<TextChannelProperties> properties = null)
+        {
+            var createdChannel = await _guild.CreateTextChannelAsync(channelName.Trim().Replace(" ", "-"), properties);
             var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Deny);
             await createdChannel.AddPermissionOverwriteAsync(_guild.EveryoneRole, permissionOverrides);
             return createdChannel;
         }
 
-        public async Task<ITextChannel> CreateGameListChannelAsync()
+        public async Task<ICategoryChannel> CreateCategoryChannelAsync(string categoryName)
+        {
+            return await _guild.CreateCategoryAsync(categoryName);
+        }
+
+        public async Task<ITextChannel> CreateCategoryChannelAsync()
         {
             var createdChannel = await _guild.CreateTextChannelAsync(_gameListChannelName);
             var permissionOverrides = new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny);
