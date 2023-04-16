@@ -1,7 +1,5 @@
 ﻿using BeeJet.Bot.Interfaces;
-using BeeJet.Bot.Managers;
 using Discord;
-using Discord.Commands;
 
 namespace BeeJet.Bot.Commands.Handlers
 {

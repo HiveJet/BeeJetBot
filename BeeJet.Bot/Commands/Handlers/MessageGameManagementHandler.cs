@@ -1,5 +1,4 @@
 ﻿using BeeJet.Bot.Interfaces;
-using BeeJet.Bot.Managers;
 using Discord;
 using System.Text.RegularExpressions;
 
