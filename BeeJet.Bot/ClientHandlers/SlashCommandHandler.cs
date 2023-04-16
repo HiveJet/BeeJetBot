@@ -46,7 +46,7 @@ namespace BeeJet.Bot.ClientHandlers
 
         private async  Task ExecuteSlashCommandAsync(string commandName, SlashCommandContext context)
         {
-            var commandHandler = _commandMethods.FirstOrDefault(b => b.CommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase));
+            var commandHandler = _commandMethods.FirstOrDefault(commandMethod => commandMethod.CommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase));
             if (commandHandler.ClassType == null)
             {
                 return;
@@ -88,7 +88,7 @@ namespace BeeJet.Bot.ClientHandlers
             guildCommand.WithDescription(attribute.Description);
             if (!string.IsNullOrWhiteSpace(attribute.BuilderMethod))
             {
-                var builderMethod = commandSource.ClassType.GetMethods().FirstOrDefault(b => b.Name == attribute.BuilderMethod && b.GetParameters().Length == 1 && b.GetParameters()[0].ParameterType == typeof(SlashCommandBuilder));
+                var builderMethod = commandSource.ClassType.GetMethods().FirstOrDefault(method => method.Name == attribute.BuilderMethod && method.GetParameters().Length == 1 && method.GetParameters()[0].ParameterType == typeof(SlashCommandBuilder));
                 if (builderMethod != null)
                 {
                     builderMethod.Invoke(_serviceProvider.GetService(commandSource.ClassType), new object[] { guildCommand });

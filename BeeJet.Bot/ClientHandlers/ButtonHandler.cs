@@ -18,17 +18,17 @@ namespace BeeJet.Bot.ClientHandlers
 
         private List<(ButtonPressedHandlerAttribute Attribute, MethodInfo Method, Type InstanceType)> GetHandlers()
         {
-            return GetButtonPressedHandlerTypes().SelectMany(type => type.GetMethods().Select(m => (Attribute: m.GetCustomAttribute<ButtonPressedHandlerAttribute>(), Method: m, InstanceType: type))
-                   .Where(b => b.Attribute != null
-                            && !b.Method.IsStatic
-                            && b.Method.ReturnType == typeof(Task))).ToList();
+            return GetButtonPressedHandlerTypes().SelectMany(type => type.GetMethods().Select(method => (Attribute: method.GetCustomAttribute<ButtonPressedHandlerAttribute>(), Method: method, InstanceType: type))
+                   .Where(method => method.Attribute != null
+                            && !method.Method.IsStatic
+                            && method.Method.ReturnType == typeof(Task))).ToList();
         }
 
         public static IEnumerable<Type> GetButtonPressedHandlerTypes()
         {
             var buttonPressedHandlerType = typeof(ButtonPressedHandler);
             return AppDomain.CurrentDomain.GetAssemblies()
-                               .SelectMany(s => s.GetTypes())
+                               .SelectMany(assembly => assembly.GetTypes())
                                .Where(type => !type.IsAbstract && buttonPressedHandlerType.IsAssignableFrom(type));
         }
 

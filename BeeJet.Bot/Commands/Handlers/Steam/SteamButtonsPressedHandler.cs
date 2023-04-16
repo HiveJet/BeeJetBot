@@ -36,7 +36,7 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
         private static SocketTextChannel GetGameChannel(IUserMessage message, string gameName, string categoryName)
         {
             var textChannels = ((SocketTextChannel)message.Channel).Guild.Channels.OfType<SocketTextChannel>();
-            var gameChannel = textChannels.FirstOrDefault(b => b.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && b.Category.Name == categoryName.Replace("-", " "));
+            var gameChannel = textChannels.FirstOrDefault(channel => channel.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && channel.Category.Name == categoryName.Replace("-", " "));
             return gameChannel;
         }
     }

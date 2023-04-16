@@ -27,7 +27,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         public static async Task GivePermissionToJoinChannel(IUser user, SocketTextChannel gameChannel)
         {
-            if (!gameChannel.Users.Any(b => b.Id == user.Id))
+            if (!gameChannel.Users.Any(channelUser => channelUser.Id == user.Id))
             {
                 var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
                 await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
@@ -69,7 +69,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         {
             var socketMessageChannel = message.Channel as SocketTextChannel;
             var textChannels = socketMessageChannel.Guild.Channels.OfType<SocketTextChannel>();
-            var gameChannel = textChannels.FirstOrDefault(b => b.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && b.CategoryId == socketMessageChannel.CategoryId);
+            var gameChannel = textChannels.FirstOrDefault(channel => channel.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && channel.CategoryId == socketMessageChannel.CategoryId);
             return gameChannel;
         }
     }

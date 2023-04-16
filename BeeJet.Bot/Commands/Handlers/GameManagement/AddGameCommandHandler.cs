@@ -29,7 +29,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         {
             var gameName = (string)Context.SlashCommandInteraction.Data.Options.First().Value;
             var categoryName = "Gaming";//Default name
-            var category = Context.SlashCommandInteraction.Data.Options.FirstOrDefault(b => b.Name == "category");
+            var category = Context.SlashCommandInteraction.Data.Options.FirstOrDefault(commandOptionData => commandOptionData.Name == "category");
             if (category != null)
             {
                 categoryName = (string)category.Value;
@@ -53,7 +53,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             {
                 game = gameInfo.Name;
             }
-            if (categoryChannel is SocketCategoryChannel socketParentCategory && socketParentCategory.Channels.Any(b => b.Name.Equals(game, StringComparison.OrdinalIgnoreCase) || b.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase)))
+            if (categoryChannel is SocketCategoryChannel socketParentCategory && socketParentCategory.Channels.Any(channel => channel.Name.Equals(game, StringComparison.OrdinalIgnoreCase) || channel.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase)))
             {
                 await context.SlashCommandInteraction.RespondAsync($"This game already has a channel", ephemeral: true);
                 return;
@@ -72,7 +72,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private async Task<ICategoryChannel> GetOrCreateCategoryChannelAsync(string categoryName, SlashCommandContext context)
         {
-            ICategoryChannel parentChannel = (await context.Guild.GetChannelsAsync()).OfType<SocketCategoryChannel>().FirstOrDefault(b => b.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+            ICategoryChannel parentChannel = (await context.Guild.GetChannelsAsync()).OfType<SocketCategoryChannel>().FirstOrDefault(channel => channel.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
             if (parentChannel == null)
             {
                 parentChannel = await context.Guild.CreateCategoryAsync(categoryName);
