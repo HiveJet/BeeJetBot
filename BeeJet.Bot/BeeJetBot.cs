@@ -7,6 +7,8 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using LiteDB;
+using BeeJet.Bot.Data.Databases;
 
 namespace BeeJet.Bot
 {
@@ -27,12 +29,13 @@ namespace BeeJet.Bot
         private readonly JoinHandler _joinHandler;
         private readonly DiscordLogHandler _discordLogHandler;
         private readonly DiscordLogger _logger;
+        private readonly ILiteDatabase _database;
 
-        public BeeJetBot(BeeJetBotOptions options)
+        public BeeJetBot(BeeJetBotOptions options, ILiteDatabase database)
         {
             _token = options.DiscordToken;
             _logger = new DiscordLogger();
-
+            _database = database;
 
             var config = new DiscordSocketConfig()
             {
@@ -54,6 +57,8 @@ namespace BeeJet.Bot
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
                 .AddSingleton(_logger)
+                .AddSingleton(_database)
+                .AddSingleton<IEchoMessageDb>(x => new EchoMessageDb(_database))
                 .AddSingleton((serviceProvider) => new SteamAPIService(options.SteamAPIKey))
                 .AddSingleton((serviceProvider) => new IGDBService(options.IDGBClientId, options.IDGBClientSecret));
 
