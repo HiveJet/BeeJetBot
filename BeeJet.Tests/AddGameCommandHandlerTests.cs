@@ -39,7 +39,7 @@ namespace BeeJet.Tests
             var categoryChannel = Substitute.For<ICategoryChannel>();
             categoryChannel.Name.Returns("Test");
             categoryChannel.Id.Returns((ulong)1);
-            var gameChannel = Substitute.For<INestedChannel>();
+            var gameChannel = Substitute.For<INestedChannel, ITextChannel>();
             gameChannel.Name.Returns("TestGame");
             gameChannel.CategoryId.Returns((ulong)1);
 

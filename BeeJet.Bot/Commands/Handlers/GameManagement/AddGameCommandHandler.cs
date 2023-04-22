@@ -59,14 +59,10 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
             var gameInfoEmbed = CreateGameInfoEmbed(gameInfo);
 
-            var categoryChannel = await GetCategoryChannelAsync(categoryName, context);
+            var categoryChannel = await context.Guild.GetCategoryChannelAsync(categoryName);
             if (categoryChannel != null)
             {
-                if ((await categoryChannel.Guild.GetChannelsAsync())
-                    .OfType<INestedChannel>()
-                    .Any(channel => channel.CategoryId == categoryChannel.Id 
-                        && (channel.Name.Equals(game, StringComparison.OrdinalIgnoreCase) 
-                        || channel.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase))))
+                if (await categoryChannel.Guild.ChannelExistsAsync(game, categoryChannel))
                 {
                     await context.SlashCommandInteraction.RespondAsync($"This game already has a channel", ephemeral: true);
                     return;
@@ -74,7 +70,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             }
             else
             {
-                categoryChannel = await CreateCategoryChannelAsync(categoryName, context);
+                categoryChannel = await context.Guild.CreateCategoryAsync(categoryName);
             }
 
             await AddToGameListChannelAsync(game, categoryChannel, gameInfoEmbed, context);
@@ -86,16 +82,6 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             await channel.AddPermissionOverwriteAsync(context.Guild.EveryoneRole, permissionOverrides);
             var message = await channel.SendMessageAsync($"This is the channel for {game}", embed: gameInfoEmbed?.Build());
 
-        }
-
-        private static async Task<ICategoryChannel> CreateCategoryChannelAsync(string categoryName, SlashCommandContext context)
-        {
-            return await context.Guild.CreateCategoryAsync(categoryName);
-        }
-
-        private static async Task<ICategoryChannel> GetCategoryChannelAsync(string categoryName, SlashCommandContext context)
-        {
-            return (await context.Guild.GetChannelsAsync()).OfType<ICategoryChannel>().FirstOrDefault(channel => channel.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
         }
 
         private async Task AddToGameListChannelAsync(string game, ICategoryChannel categoryChannel, EmbedBuilder gameInfoEmbed, SlashCommandContext context)
