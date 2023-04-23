@@ -1,6 +1,4 @@
-﻿using BeeJet.Storage.Entities;
-
-namespace BeeJet.Storage.Interfaces
+﻿namespace BeeJet.Storage.Interfaces
 {
     public interface IEchoMessageDb
     {

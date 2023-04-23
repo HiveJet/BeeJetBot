@@ -7,7 +7,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using BeeJet.Storage;
 using BeeJet.Storage.Interfaces;
 
 namespace BeeJet.Bot

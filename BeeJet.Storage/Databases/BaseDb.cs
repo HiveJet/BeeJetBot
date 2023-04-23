@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LiteDB;
 
 namespace BeeJet.Storage.Databases
 {
@@ -25,12 +24,10 @@ namespace BeeJet.Storage.Databases
 
         protected BsonValue Add(TInterface entity)
         {
-            ArgumentNullException.ThrowIfNull(nameof(entity));
+            entity = entity ?? throw new ArgumentNullException(nameof(entity));
             if (entity is not TEntity)
             {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 throw new ArgumentException($"Invalid entity type, expected {typeof(TEntity)}, received {entity.GetType()}");
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
             }
 
             return Collection.Insert((TEntity)entity);
