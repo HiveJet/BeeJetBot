@@ -1,6 +1,6 @@
 ﻿using BeeJet.Bot;
-using BeeJet.Bot.Data;
 using BeeJet.Bot.Services;
+using BeeJet.Storage.Repositories;
 using LiteDB;
 
 namespace BeeJet.Web
@@ -24,7 +24,8 @@ namespace BeeJet.Web
             };
 
             var database = new LiteDatabase(configuration.GetConnectionString("LiteDB"));
-            _bot = new BeeJetBot(options, database);
+            var repository = new BeeJetRepository(database);
+            _bot = new BeeJetBot(options, repository);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

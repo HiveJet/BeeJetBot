@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BeeJet.Storage.Interfaces;
 
-namespace BeeJet.Bot.Data.Entities
+namespace BeeJet.Storage.Entities
 {
-    public class EchoMessage : IEchoMessage
+    internal class EchoMessage : IEchoMessage
     {
         public int Id { get; set; }
-        public string Message { get; set; } 
+        public string Message { get; set; } = "";
         public ulong UserId { get; set; }
+        public ulong GuildId { get; set; }
     }
 }

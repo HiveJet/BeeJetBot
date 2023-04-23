@@ -7,8 +7,8 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using LiteDB;
-using BeeJet.Bot.Data.Databases;
+using BeeJet.Storage;
+using BeeJet.Storage.Interfaces;
 
 namespace BeeJet.Bot
 {
@@ -29,13 +29,13 @@ namespace BeeJet.Bot
         private readonly JoinHandler _joinHandler;
         private readonly DiscordLogHandler _discordLogHandler;
         private readonly DiscordLogger _logger;
-        private readonly ILiteDatabase _database;
+        private readonly IBeeJetRepository _repository;
 
-        public BeeJetBot(BeeJetBotOptions options, ILiteDatabase database)
+        public BeeJetBot(BeeJetBotOptions options, IBeeJetRepository repository)
         {
             _token = options.DiscordToken;
             _logger = new DiscordLogger();
-            _database = database;
+            _repository = repository;
 
             var config = new DiscordSocketConfig()
             {
@@ -57,10 +57,10 @@ namespace BeeJet.Bot
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
                 .AddSingleton(_logger)
-                .AddSingleton(_database)
-                .AddSingleton<IEchoMessageDb>(x => new EchoMessageDb(_database))
-                .AddSingleton((serviceProvider) => new SteamAPIService(options.SteamAPIKey))
-                .AddSingleton((serviceProvider) => new IGDBService(options.IDGBClientId, options.IDGBClientSecret));
+                .AddSingleton(_repository)
+                .AddSingleton(serviceProvider => _repository.EchoMessageDb.Value)
+                .AddSingleton(serviceProvider => new SteamAPIService(options.SteamAPIKey))
+                .AddSingleton(serviceProvider => new IGDBService(options.IDGBClientId, options.IDGBClientSecret));
 
             foreach (var commandType in SlashCommandHandler.GetCommandSourceTypes())
             {

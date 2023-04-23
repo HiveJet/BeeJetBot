@@ -1,5 +1,4 @@
-﻿using BeeJet.Bot.Data.Databases;
-using BeeJet.Bot.Data.Entities;
+﻿using BeeJet.Storage.Interfaces;
 using Discord.Commands;
 
 namespace BeeJet.Bot.Commands
@@ -18,7 +17,12 @@ namespace BeeJet.Bot.Commands
         [Summary("Echos a message.")]
         public async Task SayAsync([Remainder][Summary("The text to echo")] string echo)
         {
-            _database.Add(new EchoMessage() { Message = echo, UserId = Context.User.Id });
+            var echoMessage = _database.Create();
+            echoMessage.Message = echo;
+            echoMessage.UserId = Context.User.Id;
+            echoMessage.GuildId = Context.Guild.Id;
+
+            _database.Add(echoMessage);
 
             // ReplyAsync is a method on ModuleBase
             await ReplyAsync(echo);
@@ -28,7 +32,7 @@ namespace BeeJet.Bot.Commands
         [Summary("Echos the last message, if any.")]
         public async Task EchoAsync()
         {
-            EchoMessage echo = _database.GetLatestEcho();
+            IEchoMessage echo = _database.GetLatestEcho(Context.Guild.Id);
             if (echo != null)
             {
                 await ReplyAsync($"Latest echo is: '{echo.Message}', said by user {echo.UserId}");
