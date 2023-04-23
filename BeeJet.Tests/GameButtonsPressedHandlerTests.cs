@@ -3,7 +3,6 @@ using BeeJet.Tests.Fixtures;
 using BeeJet.Tests.Proxy;
 using Discord;
 using NSubstitute;
-using System.Threading.Channels;
 
 namespace BeeJet.Tests
 {
