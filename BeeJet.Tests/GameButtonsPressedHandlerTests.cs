@@ -30,7 +30,6 @@ namespace BeeJet.Tests
         public async Task JoinGamePressed_WitGameNameWithoutGameChannel_DoesntJoinChannel()
         {
             var user = UserFixture.UserWithAdminRole;
-            user.Id.Returns((ulong)1);
             var guild = GuildFixture.GuildWithAdminRole;
             var channel = Substitute.For<INestedChannel>();
             var commandInteraction = Substitute.For<IComponentInteraction>();
@@ -54,7 +53,6 @@ namespace BeeJet.Tests
         public async Task JoinGamePressed_WitGameNameWithGameChannel_JoinsChannel()
         {
             var user = UserFixture.UserWithAdminRole;
-            user.Id.Returns((ulong)1);
             var categoryChannel = ChannelFixture.DefaultCategoryChannel;
             var channel = ChannelFixture.TextChannelWithDefaultCategory;            
             var guild = GuildFixture.GuildWithAdminRole;
@@ -75,6 +73,34 @@ namespace BeeJet.Tests
             await pressedHandler.JoinGamePressed();
 
             var expectedMessage = "Welcome <@1>";
+            await channel.Received().SendMessageAsync(expectedMessage);
+            await context.ComponentInteraction.Received().DeferAsync();
+        }
+
+        [Test]
+        public async Task LeaveGamePressed_WitGameNameWithGameChannel_LeavesChannel()
+        {
+            var user = UserFixture.UserWithAdminRole;
+            var categoryChannel = ChannelFixture.DefaultCategoryChannel;
+            var channel = ChannelFixture.TextChannelWithDefaultCategory;
+            var guild = GuildFixture.GuildWithAdminRole;
+            guild.GetChannelsAsync().Returns(new IGuildChannel[] { categoryChannel, channel });
+
+            var commandInteraction = Substitute.For<IComponentInteraction>();
+            commandInteraction.ChannelId.Returns(channel.Id);
+            var client = Substitute.For<IDiscordClient>();
+
+            var joinMessage = $"Click to join channel for {channel.Name}";
+            var message = Substitute.For<IUserMessage, IMessage>();
+            message.Content.Returns(joinMessage);
+
+            var context = Substitute.For<ButtonPressedContextProxy>(commandInteraction, client, user, guild, message);
+            context.SetChannel(channel);
+            var pressedHandler = new GameButtonsPressedHandler();
+            pressedHandler.Context = context;
+            await pressedHandler.LeaveGamePressed();
+
+            var expectedMessage = "<@1> has left the channel";
             await channel.Received().SendMessageAsync(expectedMessage);
             await context.ComponentInteraction.Received().DeferAsync();
         }

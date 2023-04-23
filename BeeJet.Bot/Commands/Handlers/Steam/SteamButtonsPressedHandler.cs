@@ -1,5 +1,4 @@
 ﻿using BeeJet.Bot.Extensions;
-using Discord.WebSocket;
 using System.Text.RegularExpressions;
 
 namespace BeeJet.Bot.Commands.Handlers.Steam
@@ -12,7 +11,7 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
         {
             if (TryParseButtonCustomId(out string gameName, out string category))
             {
-                var channel = (SocketTextChannel)await Context.Guild.GetTextChannelAsync(gameName, category);
+                var channel = await Context.Guild.GetTextChannelAsync(gameName, category);
                 await Context.User.GivePermissionToJoinChannel(channel, $"Welcome <@{Context.User.Id}>");
             }
             await Context.ComponentInteraction.DeferAsync(true);

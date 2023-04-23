@@ -11,6 +11,7 @@ namespace BeeJet.Tests.Fixtures
             get
             { 
                 var user = Substitute.For<IGuildUser>();
+                user.Id.Returns((ulong)1);
                 user.RoleIds.Returns(new ulong[] { 1 });
                 return user;
             }
