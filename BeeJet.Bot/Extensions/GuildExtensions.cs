@@ -88,6 +88,10 @@ namespace BeeJet.Bot.Extensions
 
         public static async Task<ITextChannel> GetTextChannelAsync(this IGuild guild, string channelName, ICategoryChannel category)
         {
+            if(category is null)
+            {
+                return null;
+            }
             var channels = await guild.GetChannelsAsync();
             var channel = channels.OfType<INestedChannel>()
                 .FirstOrDefault(channel => channel.CategoryId == category.Id && channel.Name.Equals(channelName, StringComparison.OrdinalIgnoreCase));
@@ -102,6 +106,17 @@ namespace BeeJet.Bot.Extensions
         public static async Task<ITextChannel> GetMainGameListChannelAsync(this IGuild guild)
         {
             return await guild.GetTextChannelAsync(BeeJetBot.BOT_MAIN_CHANNELLIST_NAME);
+        }
+
+        public static async Task<ICategoryChannel> GetCategoryChannelAsync(this IGuild guild, ulong? categoryId)
+        {
+            if(!categoryId.HasValue)
+            {
+                return null;
+            }
+            return (await guild.GetChannelsAsync())
+                .OfType<ICategoryChannel>()
+                .FirstOrDefault(channel => channel.Id.Equals(categoryId.Value));
         }
 
         public static async Task<ICategoryChannel> GetCategoryChannelAsync(this IGuild guild, string categoryName)

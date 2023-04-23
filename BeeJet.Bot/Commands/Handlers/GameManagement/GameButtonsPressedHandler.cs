@@ -19,10 +19,10 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private async Task JoinGameAsync(string gameName)
         {
-            var gameChannel = await Context.Guild.GetTextChannelAsync(gameName, (Context.Channel as SocketTextChannel).Category);
+            var gameChannel = await DetermineGameChannel(gameName);
             if (gameChannel != null)
             {
-                await Context.User.GivePermissionToJoinChannel((SocketTextChannel)gameChannel, $"Welcome <@{Context.User.Id}>");
+                await Context.User.GivePermissionToJoinChannel(gameChannel, $"Welcome <@{Context.User.Id}>");
             }
         }
 
@@ -31,13 +31,25 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         {
             if (TryGetGameName(Context.Message, out string gameName))
             {
-                var gameChannel = await Context.Guild.GetTextChannelAsync(gameName, (Context.Channel as SocketTextChannel).Category);
-                if (gameChannel != null)
-                {
-                    await Context.User.RemovePermissionToJoinChannel((SocketTextChannel)gameChannel, $"<@{Context.User.Id}> has left the channel");
-                }
+                await LeaveGameAsync(gameName);
             }
             await Context.ComponentInteraction.DeferAsync();
+        }
+
+        private async Task LeaveGameAsync(string gameName)
+        {
+            var gameChannel = await DetermineGameChannel(gameName);
+            if (gameChannel != null)
+            {
+                await Context.User.RemovePermissionToJoinChannelAsync(gameChannel, $"<@{Context.User.Id}> has left the channel");
+            }
+        }
+
+        private async Task<ITextChannel> DetermineGameChannel(string gameName)
+        {
+            var category = await Context.Guild.GetCategoryChannelAsync((Context.Channel as INestedChannel).CategoryId);
+            var gameChannel = await Context.Guild.GetTextChannelAsync(gameName, category);
+            return gameChannel;
         }
 
         private bool TryGetGameName(IUserMessage message, out string gameName)

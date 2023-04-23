@@ -2,6 +2,7 @@
 using BeeJet.Bot.Commands.Handlers.GameManagement;
 using BeeJet.Bot.Services;
 using BeeJet.Tests.Fixtures;
+using BeeJet.Tests.Proxy;
 using Discord;
 using NSubstitute;
 
@@ -21,7 +22,7 @@ namespace BeeJet.Tests
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
 
-            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user, guild);
+            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user, guild);
 
             await commandHandler.AddGameAsync("TestGame", "Test", context);
             await context.SlashCommandInteraction.Received().RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
@@ -53,7 +54,7 @@ namespace BeeJet.Tests
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
           
-            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user, guild);
+            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user, guild);
 
             //I need a SocketCategoryChannel which I can't substitute or create
             await commandHandler.AddGameAsync("TestGame", "Test", context);
@@ -76,7 +77,7 @@ namespace BeeJet.Tests
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
 
-            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user,guild);
+            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user,guild);
 
             await commandHandler.AddGameAsync(gameName, "Test", context);
             await context.SlashCommandInteraction.Received().RespondAsync("Channel created", ephemeral: true);
@@ -121,7 +122,7 @@ namespace BeeJet.Tests
 
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
-            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user, guild);
+            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user, guild);
 
             var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
             var commandHandler = new AddGameCommandHandler(service);
@@ -144,7 +145,7 @@ namespace BeeJet.Tests
             var applicationOption = Substitute.For<IApplicationCommandInteractionDataOption>();
             applicationOption.Name.Returns("category");
             applicationOption.Value.Returns(setCategoryName);
-            var context = Substitute.For<BotResponseContextProxy>(commandInteraction, client, user, guild);
+            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user, guild);
             context.SlashCommandInteraction.Data.Options.Returns(new IApplicationCommandInteractionDataOption[] { applicationOption });
 
             var builder = new SlashCommandBuilder();
