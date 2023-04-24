@@ -362,3 +362,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+BeeJet.Web/beejet-log.db
+BeeJet.Web/beejet.db

@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeeJet.Web", "BeeJet.Web\BeeJet.Web.csproj", "{03D29C0B-7740-41D6-8D3C-3ED237781EA8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2161DDDF-A2E5-42BE-8C60-BF7846077BFD} = {2161DDDF-A2E5-42BE-8C60-BF7846077BFD}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeeJet.Bot", "BeeJet.Bot\BeeJet.Bot.csproj", "{534CE556-77C6-4C2A-85D9-2908844CC23C}"
 EndProject
@@ -24,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeeJet.Tests", "BeeJet.Tests\BeeJet.Tests.csproj", "{AF869494-6287-4D25-974E-E3A7631DD029}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeeJet.Storage", "BeeJet.Storage\BeeJet.Storage.csproj", "{2161DDDF-A2E5-42BE-8C60-BF7846077BFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +47,10 @@ Global
 		{AF869494-6287-4D25-974E-E3A7631DD029}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF869494-6287-4D25-974E-E3A7631DD029}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF869494-6287-4D25-974E-E3A7631DD029}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2161DDDF-A2E5-42BE-8C60-BF7846077BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2161DDDF-A2E5-42BE-8C60-BF7846077BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2161DDDF-A2E5-42BE-8C60-BF7846077BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2161DDDF-A2E5-42BE-8C60-BF7846077BFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
