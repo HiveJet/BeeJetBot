@@ -79,11 +79,11 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             {
                 categoryChannel = await CreateCategoryChannelAsync(categoryName, context);
             }
-
-            await AddToGameListChannelAsync(game, categoryChannel, gameInfoEmbed, context);
-
+            
             var channel = await context.Guild.CreateTextChannelAsync(game.Trim().Replace(" ", "-"), (properties) => properties.CategoryId = categoryChannel.Id);
             await context.SlashCommandInteraction.RespondAsync($"Channel created", ephemeral: true);
+            
+            await AddToGameListChannelAsync(game, categoryChannel, gameInfoEmbed, context, channel);
 
             var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Deny);
             await channel.AddPermissionOverwriteAsync(context.Guild.EveryoneRole, permissionOverrides);
@@ -101,7 +101,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             return (await context.Guild.GetChannelsAsync()).OfType<ICategoryChannel>().FirstOrDefault(channel => channel.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
         }
 
-        private async Task AddToGameListChannelAsync(string game, ICategoryChannel categoryChannel, EmbedBuilder gameInfoEmbed, SlashCommandContext context)
+        private async Task AddToGameListChannelAsync(string game, ICategoryChannel categoryChannel, EmbedBuilder gameInfoEmbed, SlashCommandContext context, ITextChannel gameChannel)
         {
             var gameListChannel = await AddOrGetGameListChannelAsync(categoryChannel, context);
             var builder = new ComponentBuilder()
@@ -109,8 +109,8 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
                 .WithButton("Leave", LeaveButtonId, ButtonStyle.Danger);
 
             var usermesage = await gameListChannel.SendMessageAsync($"Click to join channel for {game}", embed: gameInfoEmbed?.Build(), components: builder.Build());
-            _buttonContextDb?.CreateNewButtonContext(usermesage.Id, JointButtonId, game);
-            _buttonContextDb?.CreateNewButtonContext(usermesage.Id, LeaveButtonId, game);
+            _buttonContextDb?.CreateNewButtonContext(usermesage.Id, JointButtonId, gameChannel.Id.ToString());
+            _buttonContextDb?.CreateNewButtonContext(usermesage.Id, LeaveButtonId, gameChannel.Id.ToString());
         }
 
         private EmbedBuilder CreateGameInfoEmbed(GameInfo gameInfo)
