@@ -20,7 +20,8 @@ namespace BeeJet.Web
                 SteamAPIKey = configuration["STEAM_KEY"],
                 IDGBClientId = configuration["IGDB_CLIENTID"],
                 IDGBClientSecret = configuration["IGDB_SECRET"],
-                DiscordToken = configuration["DISCORD_TOKEN"]
+                DiscordToken = configuration["DISCORD_TOKEN"],
+                SteamSignInLink = configuration["SteamSignIn"]
             };
 
             _bot = new BeeJetBot(options, repository);

@@ -56,8 +56,10 @@ namespace BeeJet.Bot
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
                 .AddSingleton(_logger)
+                .AddSingleton(options)
                 .AddSingleton(_repository)
                 .AddSingleton(serviceProvider => _repository.EchoMessageDb.Value)
+                .AddSingleton(serviceProvider => _repository.SteamIdDiscordUserDb.Value)
                 .AddSingleton(serviceProvider => new SteamAPIService(options.SteamAPIKey))
                 .AddSingleton(serviceProvider => new IGDBService(options.IDGBClientId, options.IDGBClientSecret));
 

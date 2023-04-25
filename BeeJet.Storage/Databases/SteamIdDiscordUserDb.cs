@@ -41,9 +41,9 @@ namespace BeeJet.Storage.Databases
             }
         }
 
-        public string GetSteamId(string discordId)
+        public string? GetSteamId(string discordId)
         {
-            return Collection.Query().Where(b => b.DiscordId == discordId).SingleOrDefault().SteamId;
+            return Collection.Query().Where(b => b.DiscordId == discordId).SingleOrDefault()?.SteamId;
         }
 
     }
