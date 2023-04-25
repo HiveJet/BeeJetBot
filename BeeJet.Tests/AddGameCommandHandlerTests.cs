@@ -17,7 +17,7 @@ namespace BeeJet.Tests
             var guild = GuildFixture.GuildWithAdminRole;
 
             var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
-            var commandHandler = new AddGameCommandHandler(service);
+            var commandHandler = new AddGameCommandHandler(service, null);
 
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
@@ -52,7 +52,7 @@ namespace BeeJet.Tests
             categoryChannel.Guild.Returns(guild);
 
             var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
-            var commandHandler = new AddGameCommandHandler(service);
+            var commandHandler = new AddGameCommandHandler(service, null);
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
           
@@ -75,7 +75,7 @@ namespace BeeJet.Tests
             var user = UserFixture.UserWithAdminRole;
 
             var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
-            var commandHandler = new AddGameCommandHandler(service);
+            var commandHandler = new AddGameCommandHandler(service, null);
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
 
@@ -95,7 +95,7 @@ namespace BeeJet.Tests
 
             var builder = new SlashCommandBuilder();
             var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
-            var commandHandler = new AddGameCommandHandler(service);
+            var commandHandler = new AddGameCommandHandler(service, null);
             commandHandler.RegisterOptions(builder);
             var properties = builder.Build();
 

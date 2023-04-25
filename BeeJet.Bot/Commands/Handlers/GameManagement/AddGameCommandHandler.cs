@@ -1,6 +1,7 @@
 ﻿using BeeJet.Bot.Attributes;
 using BeeJet.Bot.Extensions;
 using BeeJet.Bot.Services;
+using BeeJet.Storage.Interfaces;
 using Discord;
 using Discord.WebSocket;
 
@@ -12,10 +13,12 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         internal const string JointButtonId = "join-game-id";
         internal const string LeaveButtonId = "leave-game-id";
         private readonly IGDBService _igdbService;
+        private readonly IButtonContextDb _buttonContextDb;
 
-        public AddGameCommandHandler(IGDBService igdbService)
+        public AddGameCommandHandler(IGDBService igdbService, IButtonContextDb buttonContextDb)
         {
             _igdbService = igdbService;
+            _buttonContextDb = buttonContextDb;
         }
 
         public void RegisterOptions(SlashCommandBuilder builder)
@@ -64,8 +67,8 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             {
                 if ((await categoryChannel.Guild.GetChannelsAsync())
                     .OfType<INestedChannel>()
-                    .Any(channel => channel.CategoryId == categoryChannel.Id 
-                        && (channel.Name.Equals(game, StringComparison.OrdinalIgnoreCase) 
+                    .Any(channel => channel.CategoryId == categoryChannel.Id
+                        && (channel.Name.Equals(game, StringComparison.OrdinalIgnoreCase)
                         || channel.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase))))
                 {
                     await context.SlashCommandInteraction.RespondAsync($"This game already has a channel", ephemeral: true);
@@ -105,7 +108,9 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
                 .WithButton("Join", JointButtonId, ButtonStyle.Success)
                 .WithButton("Leave", LeaveButtonId, ButtonStyle.Danger);
 
-            await gameListChannel.SendMessageAsync($"Click to join channel for {game}", embed: gameInfoEmbed?.Build(), components: builder.Build());
+            var usermesage = await gameListChannel.SendMessageAsync($"Click to join channel for {game}", embed: gameInfoEmbed?.Build(), components: builder.Build());
+            _buttonContextDb?.CreateNewButtonContext(usermesage.Id, JointButtonId, game);
+            _buttonContextDb?.CreateNewButtonContext(usermesage.Id, LeaveButtonId, game);
         }
 
         private EmbedBuilder CreateGameInfoEmbed(GameInfo gameInfo)
@@ -136,7 +141,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private async Task<ITextChannel> AddOrGetGameListChannelAsync(ICategoryChannel categoryChannel, SlashCommandContext context)
         {
-            if (!(await categoryChannel.Guild.GetChannelsAsync()).OfType<INestedChannel>().Any(channel => 
+            if (!(await categoryChannel.Guild.GetChannelsAsync()).OfType<INestedChannel>().Any(channel =>
             channel.CategoryId == categoryChannel.Id &&
             channel.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase)))
             {
