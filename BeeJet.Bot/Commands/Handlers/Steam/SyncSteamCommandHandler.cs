@@ -34,9 +34,8 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
                 if (string.IsNullOrWhiteSpace(steamIdFromDb) || !ulong.TryParse(steamIdFromDb, out steamId))
                 {
                     EmbedBuilder embed = new EmbedBuilder();
-                    embed.WithTitle("No steam id found")
-                    .WithDescription("login with at url to link steamaccount")
-                    .AddField("Url", _beeJetOptions.SteamSignInLink + Context.User.Id.ToString());
+                    embed.WithTitle("You need to link a steam account for this command")
+                    .AddField("login with url to link steamaccount", _beeJetOptions.SteamSignInLink + Context.User.Id.ToString());
 
                     await Context.SlashCommandInteraction.RespondAsync(ephemeral: true, embed: embed.Build());
                     return;
@@ -48,7 +47,7 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
             gamesWithChannel = gamesWithChannel.Where(discordChannel => !discordChannel.Users.Any(user => user.Id == Context.SlashCommandInteraction.User.Id));
             if (!gamesWithChannel.Any())
             {
-                await Context.SlashCommandInteraction.RespondAsync("No channels to join");
+                await Context.SlashCommandInteraction.RespondAsync("No channels to join", ephemeral: true);
                 return;
             }
             var builder = new ComponentBuilder();
