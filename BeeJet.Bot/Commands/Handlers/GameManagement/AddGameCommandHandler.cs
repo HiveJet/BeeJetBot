@@ -15,7 +15,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         private readonly IGDBService _igdbService;
         private readonly IButtonContextDb _buttonContextDb;
 
-        public AddGameCommandHandler(IGDBService igdbService, IButtonContextDb buttonContextDb)
+        public AddGameCommandHandler(IGDBService igdbService, IButtonContextDb buttonContextDb = null)
         {
             _igdbService = igdbService;
             _buttonContextDb = buttonContextDb;
