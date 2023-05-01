@@ -1,33 +1,42 @@
 ﻿using Discord.WebSocket;
 using Discord;
 using System.Text.RegularExpressions;
+using BeeJet.Storage.Interfaces;
 
 namespace BeeJet.Bot.Commands.Handlers.GameManagement
 {
     public class GameButtonsPressedHandler : ButtonPressedHandler
     {
+        private IButtonContextDb _buttonContextDb;
+
+        public GameButtonsPressedHandler(IButtonContextDb buttonContextDb)
+        {
+            _buttonContextDb = buttonContextDb;
+        }
+
         [ButtonPressedHandler(AddGameCommandHandler.JointButtonId)]
         public async Task JoinGamePressed()
         {
-            if (TryGetGameName(Context.Message, out string gameName))
+            if (TryGetChannelId(Context.Message, AddGameCommandHandler.JointButtonId, out ulong gameChannelId))
             {
-                await JoinGameAsync(gameName);
+                await JoinGameAsync(gameChannelId);
             }
             await Context.ComponentInteraction.DeferAsync();
         }
 
-        private async Task JoinGameAsync(string gameName)
+        private async Task JoinGameAsync(ulong gameChannelId)
         {
-            SocketTextChannel gameChannel = GetGameChannel(Context.Message, gameName);
+            ITextChannel gameChannel = await Context.Client.GetChannelAsync(gameChannelId) as ITextChannel;
             if (gameChannel != null)
             {
                 await GivePermissionToJoinChannel(Context.User, gameChannel);
             }
         }
 
-        public static async Task GivePermissionToJoinChannel(IUser user, SocketTextChannel gameChannel)
+        public static async Task GivePermissionToJoinChannel(IUser user, ITextChannel gameChannel)
         {
-            if (!gameChannel.Users.Any(channelUser => channelUser.Id == user.Id))
+            var channelUsers = (await gameChannel.GetUsersAsync().ToListAsync()).SelectMany(b => b);
+            if (!channelUsers.Any(channelUser => channelUser.Id == user.Id))
             {
                 var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Allow);
                 await gameChannel.AddPermissionOverwriteAsync(user, permissionOverrides);
@@ -38,9 +47,9 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         [ButtonPressedHandler(AddGameCommandHandler.LeaveButtonId)]
         public async Task LeaveGamePressed()
         {
-            if (TryGetGameName(Context.Message, out string gameName))
+            if (TryGetChannelId(Context.Message, AddGameCommandHandler.LeaveButtonId, out ulong gameChannelId))
             {
-                ITextChannel gameChannel = GetGameChannel(Context.Message, gameName);
+                ITextChannel gameChannel = await Context.Client.GetChannelAsync(gameChannelId) as ITextChannel;
                 if (gameChannel != null)
                 {
                     var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Inherit);
@@ -51,26 +60,19 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             await Context.ComponentInteraction.DeferAsync();
         }
 
-        private static bool TryGetGameName(IUserMessage message, out string gameName)
+        private bool TryGetChannelId(IUserMessage message, string customButtonId, out ulong channelId)
         {
-            var regex = new Regex(@"Click to join channel for ([a-zA-Z0-9\s]*)", RegexOptions.Compiled);
-
-            var matching = regex.Match(message.Content);
-            if (matching.Success)
+            var context = _buttonContextDb.GetButtonContextForMessageIdAndCustomId(message.Id, customButtonId);
+            if (context == null)
             {
-                gameName = matching.Groups[1].Value.Trim().Replace(" ", "-");
+                channelId = 0;
+                return false;
+            }
+            else
+            {
+                channelId = ulong.Parse((string)context.HandlerContext);//litedb doesn't support ulong;
                 return true;
             }
-            gameName = null;
-            return false;
-        }
-
-        private static SocketTextChannel GetGameChannel(IUserMessage message, string gameName)
-        {
-            var socketMessageChannel = message.Channel as SocketTextChannel;
-            var textChannels = socketMessageChannel.Guild.Channels.OfType<SocketTextChannel>();
-            var gameChannel = textChannels.FirstOrDefault(channel => channel.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase) && channel.CategoryId == socketMessageChannel.CategoryId);
-            return gameChannel;
         }
     }
 }

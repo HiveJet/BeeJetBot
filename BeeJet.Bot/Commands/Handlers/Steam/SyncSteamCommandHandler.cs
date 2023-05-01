@@ -12,12 +12,13 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
         private SteamAPIService _steamAPI;
         private readonly ISteamIdDiscordUserDb _steamUserDb;
         private readonly BeeJetBotOptions _beeJetOptions;
-
-        public SyncSteamCommandHandler(Services.SteamAPIService steamAPI, ISteamIdDiscordUserDb steamUserDb, BeeJetBotOptions options)
+        private readonly IButtonContextDb _buttonContextDb;
+        public SyncSteamCommandHandler(Services.SteamAPIService steamAPI, ISteamIdDiscordUserDb steamUserDb, BeeJetBotOptions options, IButtonContextDb buttonContextDb)
         {
             _steamAPI = steamAPI;
             _steamUserDb = steamUserDb;
             _beeJetOptions = options;
+            _buttonContextDb = buttonContextDb;
         }
 
         [BeeJetBotSlashCommand("sync-steam", "Sync steam library with channels", nameof(RegisterOptions))]
@@ -51,11 +52,22 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
                 return;
             }
             var builder = new ComponentBuilder();
-            foreach (var game in gamesWithChannel)
+            List<(string CustomId, ulong ChannelId)> gameIdMapping = new List<(string CustomId, ulong ChannelId)>();
+            int buttonIndex = 0;
+            foreach (var gameChannel in gamesWithChannel)
             {
-                builder.WithButton(game.Name + $"({game.Category.Name})", "join-game-id-" + game.Name.Replace(" ", "-") + "-------" + game.Category.Name.Replace(" ", "-"));
+                string customId = "join-game-id-" + gameChannel.Name.Replace(" ", "-") + "-" + buttonIndex;
+                builder.WithButton(gameChannel.Name + $"({gameChannel.Category.Name})", customId);
+                gameIdMapping.Add((customId, gameChannel.Id));
+                buttonIndex++;
             }
+            
             await Context.SlashCommandInteraction.RespondAsync("Which channels do you want to join?", ephemeral: true, components: builder.Build());
+            var response = await Context.SlashCommandInteraction.GetOriginalResponseAsync();
+            foreach (var mapping in gameIdMapping)
+            {
+                _buttonContextDb.CreateNewButtonContext(response.Id, mapping.CustomId, mapping.ChannelId.ToString());
+            }
         }
 
         public void RegisterOptions(SlashCommandBuilder builder)
