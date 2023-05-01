@@ -13,5 +13,6 @@ namespace BeeJet.Storage.Repositories
         }
 
         public Lazy<IEchoMessageDb> EchoMessageDb => new Lazy<IEchoMessageDb>(() => new EchoMessageDb(_database));
+        public Lazy<IButtonContextDb> ButtonContextDb => new Lazy<IButtonContextDb>(() => new ButtonContextDb(_database));
     }
 }
