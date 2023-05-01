@@ -30,15 +30,8 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
                 await Context.SlashCommandInteraction.RespondEphemeralAsync("Not a valid steamid");
                 return;
             }
-           
-            var steamIdFromDb = _steamUserDb.GetSteamId(Context.User.Id.ToString());
-            if (string.IsNullOrWhiteSpace(steamIdFromDb) || !ulong.TryParse(steamIdFromDb, out steamId))
+            else if (await TryGetSteamIdOrChallenge(out steamId) == false)
             {
-                EmbedBuilder embed = new EmbedBuilder();
-                embed.WithTitle("You need to link a steam account for this command")
-                .AddField("login with url to link steamaccount", _beeJetOptions.SteamSignInLink + Context.User.Id.ToString());
-
-                await Context.SlashCommandInteraction.RespondEphemeralAsync(embed: embed.Build());
                 return;
             }
 
@@ -67,6 +60,22 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
             {
                 _buttonContextDb.CreateNewButtonContext(response.Id, mapping.CustomId, mapping.ChannelId.ToString());
             }
+        }
+
+        private async Task<bool> TryGetSteamIdOrChallenge(out ulong steamId)
+        {
+            var steamIdFromDb = _steamUserDb.GetSteamId(Context.User.Id.ToString());
+            if (string.IsNullOrWhiteSpace(steamIdFromDb) || !ulong.TryParse(steamIdFromDb, out steamId))
+            {
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("You need to link a steam account for this command")
+                .AddField("login with url to link steamaccount", _beeJetOptions.SteamSignInLink + Context.User.Id.ToString());
+
+                await Context.SlashCommandInteraction.RespondEphemeralAsync(embed: embed.Build());
+                return false;
+            }
+
+            return true;
         }
 
         public void RegisterOptions(SlashCommandBuilder builder)
