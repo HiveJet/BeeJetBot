@@ -51,7 +51,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         {
             if (!context.Guild.IsAdmin(context.User as IGuildUser))
             {
-                await context.SlashCommandInteraction.RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
+                await context.SlashCommandInteraction.RespondEphemeralAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'");
                 return;
             }
             var gameInfo = await _igdbService.GetGameInfoAsync(game.Replace("-", " "));
@@ -71,7 +71,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
                         && (channel.Name.Equals(game, StringComparison.OrdinalIgnoreCase)
                         || channel.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase))))
                 {
-                    await context.SlashCommandInteraction.RespondAsync($"This game already has a channel", ephemeral: true);
+                    await context.SlashCommandInteraction.RespondEphemeralAsync($"This game already has a channel");
                     return;
                 }
             }
@@ -81,7 +81,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
             }
             
             var channel = await context.Guild.CreateTextChannelAsync(game.Trim().Replace(" ", "-"), (properties) => properties.CategoryId = categoryChannel.Id);
-            await context.SlashCommandInteraction.RespondAsync($"Channel created", ephemeral: true);
+            await context.SlashCommandInteraction.RespondEphemeralAsync($"Channel created");
             
             await AddToGameListChannelAsync(game, categoryChannel, gameInfoEmbed, context, channel);
 

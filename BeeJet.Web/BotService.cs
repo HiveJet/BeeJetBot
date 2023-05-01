@@ -21,7 +21,7 @@ namespace BeeJet.Web
                 IDGBClientId = configuration["IGDB_CLIENTID"],
                 IDGBClientSecret = configuration["IGDB_SECRET"],
                 DiscordToken = configuration["DISCORD_TOKEN"],
-                SteamSignInLink = configuration["SteamSignIn"]
+                SteamSignInLink = configuration["STEAM_SIGNINURL"]
             };
 
             _bot = new BeeJetBot(options, repository);

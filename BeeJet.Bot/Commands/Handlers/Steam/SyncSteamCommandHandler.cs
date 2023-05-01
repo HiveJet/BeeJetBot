@@ -1,5 +1,6 @@
 ﻿using AutoMapper.Execution;
 using BeeJet.Bot.Attributes;
+using BeeJet.Bot.Extensions;
 using BeeJet.Bot.Services;
 using BeeJet.Storage.Interfaces;
 using Discord;
@@ -26,21 +27,19 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
         {
             if (Context.SlashCommandInteraction.Data.Options.Count > 0 && !ulong.TryParse((string)Context.SlashCommandInteraction.Data.Options.First().Value, out ulong steamId))
             {
-                await Context.SlashCommandInteraction.RespondAsync("Not a valid steamid", ephemeral: true);
+                await Context.SlashCommandInteraction.RespondEphemeralAsync("Not a valid steamid");
                 return;
             }
-            else
+           
+            var steamIdFromDb = _steamUserDb.GetSteamId(Context.User.Id.ToString());
+            if (string.IsNullOrWhiteSpace(steamIdFromDb) || !ulong.TryParse(steamIdFromDb, out steamId))
             {
-                var steamIdFromDb = _steamUserDb.GetSteamId(Context.User.Id.ToString());
-                if (string.IsNullOrWhiteSpace(steamIdFromDb) || !ulong.TryParse(steamIdFromDb, out steamId))
-                {
-                    EmbedBuilder embed = new EmbedBuilder();
-                    embed.WithTitle("You need to link a steam account for this command")
-                    .AddField("login with url to link steamaccount", _beeJetOptions.SteamSignInLink + Context.User.Id.ToString());
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("You need to link a steam account for this command")
+                .AddField("login with url to link steamaccount", _beeJetOptions.SteamSignInLink + Context.User.Id.ToString());
 
-                    await Context.SlashCommandInteraction.RespondAsync(ephemeral: true, embed: embed.Build());
-                    return;
-                }
+                await Context.SlashCommandInteraction.RespondEphemeralAsync(embed: embed.Build());
+                return;
             }
 
             var games = await _steamAPI.GetGamesFromSteamUser(steamId);
@@ -48,7 +47,7 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
             gamesWithChannel = gamesWithChannel.Where(discordChannel => !discordChannel.Users.Any(user => user.Id == Context.SlashCommandInteraction.User.Id));
             if (!gamesWithChannel.Any())
             {
-                await Context.SlashCommandInteraction.RespondAsync("No channels to join", ephemeral: true);
+                await Context.SlashCommandInteraction.RespondEphemeralAsync("No channels to join");
                 return;
             }
             var builder = new ComponentBuilder();
@@ -61,8 +60,8 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
                 gameIdMapping.Add((customId, gameChannel.Id));
                 buttonIndex++;
             }
-            
-            await Context.SlashCommandInteraction.RespondAsync("Which channels do you want to join?", ephemeral: true, components: builder.Build());
+
+            await Context.SlashCommandInteraction.RespondEphemeralAsync("Which channels do you want to join?", components: builder.Build());
             var response = await Context.SlashCommandInteraction.GetOriginalResponseAsync();
             foreach (var mapping in gameIdMapping)
             {
