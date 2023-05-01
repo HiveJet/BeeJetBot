@@ -5,6 +5,7 @@ using BeeJet.Bot.Services;
 using BeeJet.Storage.Interfaces;
 using Discord;
 using Discord.WebSocket;
+using SteamWebAPI2.Models;
 
 namespace BeeJet.Bot.Commands.Handlers.Steam
 {
@@ -30,9 +31,17 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
                 await Context.SlashCommandInteraction.RespondEphemeralAsync("Not a valid steamid");
                 return;
             }
-            else if (await TryGetSteamIdOrChallenge(out steamId) == false)
+            else
             {
-                return;
+                var steamChallenge = await TryGetSteamIdOrChallenge();
+                if (!steamChallenge.IsSuccess)
+                {
+                    return;
+                }
+                else
+                {
+                    steamId = steamChallenge.SteamId;
+                }
             }
 
             var games = await _steamAPI.GetGamesFromSteamUser(steamId);
@@ -62,20 +71,20 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
             }
         }
 
-        private async Task<bool> TryGetSteamIdOrChallenge(out ulong steamId)
+        private async Task<(bool IsSuccess, ulong SteamId)> TryGetSteamIdOrChallenge()
         {
             var steamIdFromDb = _steamUserDb.GetSteamId(Context.User.Id.ToString());
-            if (string.IsNullOrWhiteSpace(steamIdFromDb) || !ulong.TryParse(steamIdFromDb, out steamId))
+            if (string.IsNullOrWhiteSpace(steamIdFromDb) || !ulong.TryParse(steamIdFromDb, out ulong steamId))
             {
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.WithTitle("You need to link a steam account for this command")
                 .AddField("login with url to link steamaccount", _beeJetOptions.SteamSignInLink + Context.User.Id.ToString());
 
                 await Context.SlashCommandInteraction.RespondEphemeralAsync(embed: embed.Build());
-                return false;
+                return (false, 0);
             }
 
-            return true;
+            return (true, steamId);
         }
 
         public void RegisterOptions(SlashCommandBuilder builder)
