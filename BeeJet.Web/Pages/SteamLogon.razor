@@ -50,7 +50,7 @@
         var state = await AuthenticationProvider.GetAuthenticationStateAsync();
         if (state.User != null)
         {
-            var steamOpenIdClaim = state.User.Claims.FirstOrDefault().Value;
+            var steamOpenIdClaim = state.User.Claims.FirstOrDefault()?.Value;
             if (steamOpenIdClaim!=null)
             {
                 SteamId = steamOpenIdClaim.Substring("https://steamcommunity.com/openid/id/".Length);
