@@ -2,7 +2,7 @@
 {
     public interface ISteamIdDiscordUserDb
     {
-        void AddOrUpdateMapping(string discordId, string steamId);
+        void SetDiscordSteamMapping(string discordId, string steamId);
         string? GetSteamId(string discordId);
     }
 }

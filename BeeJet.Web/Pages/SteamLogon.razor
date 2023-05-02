@@ -56,7 +56,7 @@
                 SteamId = steamOpenIdClaim.Substring("https://steamcommunity.com/openid/id/".Length);
                 if (!string.IsNullOrWhiteSpace(SteamId))
                 {
-                    BeeJetBotRepository.SteamIdDiscordUserDb.Value.AddOrUpdateMapping(DiscordId, SteamId);
+                    BeeJetBotRepository.SteamIdDiscordUserDb.Value.SetDiscordSteamMapping(DiscordId, SteamId);
                     IsLoggedIn = true;
                 }
             }

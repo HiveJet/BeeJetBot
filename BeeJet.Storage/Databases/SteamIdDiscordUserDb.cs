@@ -24,26 +24,41 @@ namespace BeeJet.Storage.Databases
 
         protected override string ProvideCollectionName() => "steamdiscordmappings";
 
-        public void AddOrUpdateMapping(string discordId, string steamId)
+        public void SetDiscordSteamMapping(string discordId, string steamId)
         {
-            var currentMapping = Collection.Query().Where(b => b.DiscordId == discordId).SingleOrDefault();
+            var currentMapping = DetermineMapping(discordId);
             if (currentMapping == null)
             {
-                var mapping = Create();
-                mapping.DiscordId = discordId;
-                mapping.SteamId = steamId;
-                Add(mapping);
+                AddMapping(discordId, steamId);
             }
             else
             {
-                currentMapping.SteamId = steamId;
-                Collection.Update(currentMapping);
+                UpdateMapping(steamId, currentMapping);
             }
+        }
+
+        private SteamIdDiscordUser DetermineMapping(string discordId)
+        {
+            return Collection.Query().Where(b => b.DiscordId == discordId).SingleOrDefault();
+        }
+
+        private void UpdateMapping(string steamId, SteamIdDiscordUser currentMapping)
+        {
+            currentMapping.SteamId = steamId;
+            Collection.Update(currentMapping);
+        }
+
+        private void AddMapping(string discordId, string steamId)
+        {
+            var mapping = Create();
+            mapping.DiscordId = discordId;
+            mapping.SteamId = steamId;
+            Add(mapping);
         }
 
         public string? GetSteamId(string discordId)
         {
-            return Collection.Query().Where(b => b.DiscordId == discordId).SingleOrDefault()?.SteamId;
+            return DetermineMapping(discordId)?.SteamId;
         }
 
     }
