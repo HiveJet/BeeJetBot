@@ -9,6 +9,7 @@ namespace BeeJet.Bot
 
         }
 
+        public string SteamSignInLink { get; set; }
         public string DiscordToken { get; set; }
         public string SteamAPIKey { get; set; }
         public string IDGBClientId { get; set; }
