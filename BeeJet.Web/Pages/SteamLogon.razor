@@ -1,0 +1,66 @@
+﻿@page "/steam-login/{DiscordId}"
+@layout EmptyLayout
+@inject AuthenticationStateProvider AuthenticationProvider
+@inject BeeJet.Storage.Interfaces.IBeeJetRepository BeeJetBotRepository
+<style>
+    body {
+        background-color: black;
+    }
+
+    div {
+        width: 600px;
+        height: 200px;
+        background-color: #0C2060;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+    }
+</style>
+
+<main style="background-color:black; color:white">
+    <div style="text-align:center">
+        <h1>Login to steam for BeeJetBot</h1>
+        <hr />
+        @if (!IsLoggedIn)
+        {
+            <a href="@("/signin/"+ DiscordId)">
+                <img src="steamlogin.png" />
+            </a>
+        }
+        else
+        {
+            <p>Thank you, steamid(@SteamId) is now coupled to your discord account for BeeJetBot(@DiscordId)</p>
+            <p>You can now use commands that need steam and close this tab</p>
+        }
+    </div>
+</main>
+
+@code {
+    public bool IsLoggedIn { get; set; }
+
+    [Parameter]
+    public string DiscordId { get; set; }
+    public string SteamId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationProvider.GetAuthenticationStateAsync();
+        if (state.User != null)
+        {
+            var steamOpenIdClaim = state.User.Claims.FirstOrDefault()?.Value;
+            if (steamOpenIdClaim!=null)
+            {
+                SteamId = steamOpenIdClaim.Substring("https://steamcommunity.com/openid/id/".Length);
+                if (!string.IsNullOrWhiteSpace(SteamId))
+                {
+                    BeeJetBotRepository.SteamIdDiscordUserDb.Value.SetDiscordSteamMapping(DiscordId, SteamId);
+                    IsLoggedIn = true;
+                }
+            }
+        }
+   
+    }
+}
