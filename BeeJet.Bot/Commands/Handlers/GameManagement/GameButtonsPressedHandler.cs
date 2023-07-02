@@ -62,7 +62,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private bool TryGetChannelId(IUserMessage message, string customButtonId, out ulong channelId)
         {
-            var context = _buttonContextDb.GetButtonContextForMessageIdAndCustomId(message.Id, customButtonId);
+            var context = _buttonContextDb.GetButtonContext(message.Id, customButtonId);
             if (context == null)
             {
                 channelId = 0;

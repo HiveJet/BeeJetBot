@@ -32,7 +32,7 @@ namespace BeeJet.Bot.Commands.Handlers.Steam
 
         private bool GetChannelId(out ulong channelId)
         {
-            var context = _buttonContextDb.GetButtonContextForMessageIdAndCustomId(Context.Message.Id, Context.ComponentInteraction.Data.CustomId);
+            var context = _buttonContextDb.GetButtonContext(Context.Message.Id, Context.ComponentInteraction.Data.CustomId);
             if (context == null)
             {
                 channelId = 0;

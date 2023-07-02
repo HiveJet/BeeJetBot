@@ -30,7 +30,7 @@ namespace BeeJet.Storage.Databases
             Add(buttonContext);
         }
 
-        public ICollection<IButtonContext> GetButtonContextsForMessageId(ulong messageId)
+        public ICollection<IButtonContext> GetButtonContexts(ulong messageId)
         {
             return Collection.Query().Where(b => b.MessageId == messageId).ToList().OfType<IButtonContext>().ToList();
         }
@@ -38,7 +38,7 @@ namespace BeeJet.Storage.Databases
 
         protected override string ProvideCollectionName() => "buttoncontexts";
 
-        public IButtonContext GetButtonContextForMessageIdAndCustomId(ulong messageId, string customButtonId)
+        public IButtonContext GetButtonContext(ulong messageId, string customButtonId)
         {
             return Collection.Query().Where(b => b.MessageId == messageId && b.CustomButtonId == customButtonId).FirstOrDefault();
         }

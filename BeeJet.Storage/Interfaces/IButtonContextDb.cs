@@ -3,7 +3,7 @@
     public interface IButtonContextDb
     {
         void CreateNewButtonContext(ulong messageId, string customIdButton, object context);
-        IButtonContext GetButtonContextForMessageIdAndCustomId(ulong id, string customButtonId);
-        ICollection<IButtonContext> GetButtonContextsForMessageId(ulong messageId);
+        IButtonContext GetButtonContext(ulong messageId, string customButtonId);
+        ICollection<IButtonContext> GetButtonContexts(ulong messageId);
     }
 }

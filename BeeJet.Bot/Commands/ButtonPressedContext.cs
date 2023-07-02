@@ -1,9 +1,10 @@
 ﻿using BeeJet.Bot.Extensions;
+using BeeJet.Bot.Interfaces;
 using Discord;
 
 namespace BeeJet.Bot.Commands
 {
-    public class ButtonPressedContext : BotResponseContext
+    public class ButtonPressedContext : BotResponseContext, IButtonPressedContext
     {
         public IComponentInteraction ComponentInteraction { get; }
 

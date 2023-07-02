@@ -1,7 +1,9 @@
-﻿namespace BeeJet.Bot.Commands
+﻿using BeeJet.Bot.Interfaces;
+
+namespace BeeJet.Bot.Commands
 {
-    public abstract class ButtonPressedHandler
+    public abstract class ButtonPressedHandler : IButtonPressedHandler
     {
-        public ButtonPressedContext Context { get; set; }
+        public IButtonPressedContext Context { get; set; }
     }
 }
