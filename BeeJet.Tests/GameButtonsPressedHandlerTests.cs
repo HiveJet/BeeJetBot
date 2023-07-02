@@ -12,7 +12,7 @@ namespace BeeJet.Tests
     public class GameButtonsPressedHandlerTests
     {
         [Test]
-        public async Task JoinGamePressed_WithoutGameName_DoesntJoinChannel()
+        public async Task JoinGamePressed_ShouldNotJoinChannel_WhenCalledWithoutGameName()
         {
             var user = UserFixture.UserWithAdminRole;
             var guild = GuildFixture.GuildWithAdminRole;

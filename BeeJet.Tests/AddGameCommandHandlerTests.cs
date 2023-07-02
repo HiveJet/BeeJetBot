@@ -11,26 +11,24 @@ namespace BeeJet.Tests
     public class AddGameCommandHandlerTests
     {
         [Test]
-        public async Task AddGameAsync_WithoutAdminUser_SendsAddAdminRoleMessage()
+        public async Task AddGameAsync_ShouldSendRequiredAdminRoleMessage_WhenUserIsNotAdmin()
         {
             var user = Substitute.For<IGuildUser>();
             var guild = GuildFixture.GuildWithAdminRole;
-
             var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
-            var commandHandler = new AddGameCommandHandler(service);
-
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
+            var context = new SlashCommandContextProxy(commandInteraction, client, user, guild);
 
-            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user, guild);
+            var commandHandler = new AddGameCommandHandler(service);
+            await commandHandler.AddGameAsync("InvalidGameName", "InvalidCategory", context);
 
-            await commandHandler.AddGameAsync("TestGame", "Test", context);
             await context.SlashCommandInteraction.Received().RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
             await context.Guild.DidNotReceiveWithAnyArgs().CreateTextChannelAsync(Arg.Any<string>(), func: Arg.Any<Action<TextChannelProperties>>());
         }
 
         [Test]
-        public async Task AddGameAsync_WithExistingGameChannel_SendsGameAlreadyHasChannelMessage()
+        public async Task AddGameAsync_ShouldSendAlreadyHasChannelMessage_WhenGameChannelAlreadyExists()
         {
             var role = RoleFixture.AdminRole;
 
@@ -54,19 +52,17 @@ namespace BeeJet.Tests
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
           
-            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user, guild);
+            var context = new SlashCommandContextProxy(commandInteraction, client, user, guild);
 
-            //I need a SocketCategoryChannel which I can't substitute or create
-            await commandHandler.AddGameAsync("TestGame", "Test", context);
+            await commandHandler.AddGameAsync(gameChannel.Name, categoryChannel.Name, context);
             await context.SlashCommandInteraction.Received().RespondAsync($"This game already has a channel", ephemeral: true);
         }
 
         [Test]
-        public async Task AddGameAsync_WithoutChannel_CreatesGameChannel()
+        public async Task AddGameAsync_ShouldCreateGameChannel_WhenChannelDoesntExist()
         {
-            var gameName = "TestGame";
             var channel = Substitute.For<ITextChannel>();
-            channel.Name.Returns(gameName);
+            channel.Name.Returns("TestGame");
 
             var guild = GuildFixture.GuildWithAdminRole;
             guild.CreateTextChannelAsync(Arg.Any<string>(), func: Arg.Any<Action<TextChannelProperties>>()).Returns(channel);
@@ -77,15 +73,15 @@ namespace BeeJet.Tests
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
 
-            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user,guild);
+            var context = new SlashCommandContextProxy(commandInteraction, client, user,guild);
 
-            await commandHandler.AddGameAsync(gameName, "Test", context);
+            await commandHandler.AddGameAsync(channel.Name, "Test", context);
             await context.SlashCommandInteraction.Received().RespondAsync("Channel created", ephemeral: true);
-            await channel.Received().SendMessageAsync($"This is the channel for {gameName}", embed: Arg.Any<Embed>());
+            await channel.Received().SendMessageAsync($"This is the channel for {channel.Name}", embed: Arg.Any<Embed>());
         }
 
         [Test]
-        public void RegisterOptions_WithBuilder_CreatesGameAndCategoryOption()
+        public void RegisterOptions_ShouldCreateGameAndCategoryOption_WhenCalled()
         {
             var gameOptionName = "game";
             var categoryOptionName = "category";
@@ -113,26 +109,24 @@ namespace BeeJet.Tests
         }
 
         [Test]
-        public void GetCategoryName_WithoutCategoryOption_ReturnsDefaultCategoryName()
+        public void GetCategoryName_ShouldReturnDefaultCategoryName_WhenGivenCategoryDoesntExist()
         {
-            var defaultCategory = "Gaming";
-
             var user = UserFixture.UserWithAdminRole;
             var guild = GuildFixture.GuildWithAdminRole;
 
             var commandInteraction = Substitute.For<ISlashCommandInteraction>();
             var client = Substitute.For<IDiscordClient>();
-            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user, guild);
+            var context = new SlashCommandContextProxy(commandInteraction, client, user, guild);
 
             var service = Substitute.For<IGDBService>(string.Empty, string.Empty);
             var commandHandler = new AddGameCommandHandler(service);
             commandHandler.Context = context;
 
-            Assert.That(defaultCategory, Is.EqualTo(commandHandler.GetCategoryName()));
+            Assert.That(commandHandler.GetCategoryName(), Is.EqualTo(AddGameCommandHandler.DefaultCategoryName));
         }
 
         [Test]
-        public void GetCategoryName_WithCategoryOption_ReturnsDefaultCategoryName()
+        public void GetCategoryName_ShouldReturnCategory_WhenGivenCategoryExists()
         {
             var setCategoryName = "Test";
 
@@ -145,7 +139,7 @@ namespace BeeJet.Tests
             var applicationOption = Substitute.For<IApplicationCommandInteractionDataOption>();
             applicationOption.Name.Returns("category");
             applicationOption.Value.Returns(setCategoryName);
-            var context = Substitute.For<SlashCommandContextProxy>(commandInteraction, client, user, guild);
+            var context = new SlashCommandContextProxy(commandInteraction, client, user, guild);
             context.SlashCommandInteraction.Data.Options.Returns(new IApplicationCommandInteractionDataOption[] { applicationOption });
 
             var builder = new SlashCommandBuilder();
@@ -154,7 +148,7 @@ namespace BeeJet.Tests
             commandHandler.Context = context;
             commandHandler.RegisterOptions(builder);
 
-            Assert.That(setCategoryName, Is.EqualTo(commandHandler.GetCategoryName()));
+            Assert.That(commandHandler.GetCategoryName(), Is.EqualTo(setCategoryName));
         }
     }
 }

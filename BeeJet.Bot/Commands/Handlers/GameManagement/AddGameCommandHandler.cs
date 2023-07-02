@@ -12,6 +12,8 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         internal static readonly string ChannelName = "Game-channels";
         internal const string JointButtonId = "join-game-id";
         internal const string LeaveButtonId = "leave-game-id";
+        internal const string DefaultCategoryName = "Gaming";
+
         private readonly IGDBService _igdbService;
         private readonly IButtonContextDb _buttonContextDb;
 
@@ -37,7 +39,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         public string GetCategoryName()
         {
-            var categoryName = "Gaming";//Default name
+            var categoryName = DefaultCategoryName;
             var category = Context.SlashCommandInteraction.Data.Options.FirstOrDefault(commandOptionData => commandOptionData.Name == "category");
             if (category != null)
             {
