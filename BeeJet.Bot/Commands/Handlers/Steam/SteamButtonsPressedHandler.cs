@@ -1,34 +1,49 @@
-﻿using BeeJet.Bot.Extensions;
+﻿using Discord.WebSocket;
+using Discord;
 using System.Text.RegularExpressions;
+using BeeJet.Bot.Commands.Handlers.GameManagement;
+using BeeJet.Storage.Interfaces;
 
 namespace BeeJet.Bot.Commands.Handlers.Steam
 {
     public class SteamButtonsPressedHandler : ButtonPressedHandler
     {
 
+        private IButtonContextDb _buttonContextDb;
+
+        public SteamButtonsPressedHandler(IButtonContextDb buttonContextDb)
+        {
+            _buttonContextDb = buttonContextDb;
+        }
+
         [ButtonPressedHandler("join-game-id-", startsWith: true)]
         public async Task JoinGamePressed()
         {
-            if (TryParseButtonCustomId(out string gameName, out string category))
+            if (GetChannelId(out ulong channelId))
             {
-                var channel = await Context.Guild.GetTextChannelAsync(gameName, category);
-                await Context.User.GivePermissionToJoinChannel(channel, $"Welcome <@{Context.User.Id}>");
+                var channel = await Context.Client.GetChannelAsync(channelId);
+                if (channel is ITextChannel textChannel)
+                {
+                    await GameButtonsPressedHandler.GivePermissionToJoinChannel(Context.User, textChannel);
+                }
             }
             await Context.ComponentInteraction.DeferAsync(true);
         }
 
-        private bool TryParseButtonCustomId(out string gameName, out string category)
+        private bool GetChannelId(out ulong channelId)
         {
-            var match = new Regex("join-game-id-([a-zA-Z0-9\\s]*)-------([a-zA-Z0-9-\\s]*)", RegexOptions.Compiled).Match(Context.ComponentInteraction.Data.CustomId);
-            if (!match.Success)
+            var context = _buttonContextDb.GetButtonContextForMessageIdAndCustomId(Context.Message.Id, Context.ComponentInteraction.Data.CustomId);
+            if (context == null)
             {
-                gameName = null;
-                category = null;
+                channelId = 0;
                 return false;
             }
-            gameName = match.Groups[1].Value;
-            category = match.Groups[2].Value;
-            return true;
+            else
+            {
+                channelId = ulong.Parse((string)context.HandlerContext);//LiteDb doesn't support ulong
+                return true;
+            }
         }
+     
     }
 }

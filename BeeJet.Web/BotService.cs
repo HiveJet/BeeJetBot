@@ -1,5 +1,7 @@
 ﻿using BeeJet.Bot;
-using BeeJet.Bot.Services;
+using BeeJet.Storage.Interfaces;
+using BeeJet.Storage.Repositories;
+using LiteDB;
 
 namespace BeeJet.Web
 {
@@ -10,10 +12,19 @@ namespace BeeJet.Web
 
         public bool IsRunning { get; private set; }
 
-        public BotService(ILogger<BotService> logger, IConfiguration configuration)
+        public BotService(ILogger<BotService> logger, IConfiguration configuration, IBeeJetRepository repository)
         {
             _logger = logger;
-            _bot = new BeeJetBot(new BeeJetBotOptions(configuration));
+            var options = new BeeJetBotOptions()
+            {
+                SteamAPIKey = configuration["STEAM_KEY"],
+                IDGBClientId = configuration["IGDB_CLIENTID"],
+                IDGBClientSecret = configuration["IGDB_SECRET"],
+                DiscordToken = configuration["DISCORD_TOKEN"],
+                SteamSignInLink = configuration["STEAM_SIGNINURL"]
+            };
+
+            _bot = new BeeJetBot(options, repository);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

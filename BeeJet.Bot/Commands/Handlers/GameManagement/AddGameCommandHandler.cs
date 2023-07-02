@@ -1,6 +1,7 @@
 ﻿using BeeJet.Bot.Attributes;
 using BeeJet.Bot.Extensions;
 using BeeJet.Bot.Services;
+using BeeJet.Storage.Interfaces;
 using Discord;
 using Discord.WebSocket;
 
@@ -12,10 +13,12 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         internal const string JointButtonId = "join-game-id";
         internal const string LeaveButtonId = "leave-game-id";
         private readonly IGDBService _igdbService;
+        private readonly IButtonContextDb _buttonContextDb;
 
-        public AddGameCommandHandler(IGDBService igdbService)
+        public AddGameCommandHandler(IGDBService igdbService, IButtonContextDb buttonContextDb = null)
         {
             _igdbService = igdbService;
+            _buttonContextDb = buttonContextDb;
         }
 
         public void RegisterOptions(SlashCommandBuilder builder)
@@ -48,7 +51,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
         {
             if (!context.Guild.IsAdmin(context.User as IGuildUser))
             {
-                await context.SlashCommandInteraction.RespondAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'", ephemeral: true);
+                await context.SlashCommandInteraction.RespondEphemeralAsync($"To add a game you need the role '{BeeJetBot.BOT_ADMIN_ROLE_NAME}'");
                 return;
             }
             var gameInfo = await _igdbService.GetGameInfoAsync(game.Replace("-", " "));
@@ -59,24 +62,28 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
             var gameInfoEmbed = CreateGameInfoEmbed(gameInfo);
 
-            var categoryChannel = await context.Guild.GetCategoryChannelAsync(categoryName);
+            var categoryChannel = await GetCategoryChannelAsync(categoryName, context);
             if (categoryChannel != null)
             {
-                if (await categoryChannel.Guild.ChannelExistsAsync(game, categoryChannel))
+                if ((await categoryChannel.Guild.GetChannelsAsync())
+                    .OfType<INestedChannel>()
+                    .Any(channel => channel.CategoryId == categoryChannel.Id
+                        && (channel.Name.Equals(game, StringComparison.OrdinalIgnoreCase)
+                        || channel.Name.Replace(" ", "-").Equals(game.Replace(" ", "-"), StringComparison.OrdinalIgnoreCase))))
                 {
-                    await context.SlashCommandInteraction.RespondAsync($"This game already has a channel", ephemeral: true);
+                    await context.SlashCommandInteraction.RespondEphemeralAsync($"This game already has a channel");
                     return;
                 }
             }
             else
             {
-                categoryChannel = await context.Guild.CreateCategoryAsync(categoryName);
+                categoryChannel = await CreateCategoryChannelAsync(categoryName, context);
             }
-
-            await AddToGameListChannelAsync(game, categoryChannel, gameInfoEmbed, context);
-
+            
             var channel = await context.Guild.CreateTextChannelAsync(game.Trim().Replace(" ", "-"), (properties) => properties.CategoryId = categoryChannel.Id);
-            await context.SlashCommandInteraction.RespondAsync($"Channel created", ephemeral: true);
+            await context.SlashCommandInteraction.RespondEphemeralAsync($"Channel created");
+            
+            await AddToGameListChannelAsync(game, categoryChannel, gameInfoEmbed, context, channel);
 
             var permissionOverrides = new OverwritePermissions(viewChannel: PermValue.Deny);
             await channel.AddPermissionOverwriteAsync(context.Guild.EveryoneRole, permissionOverrides);
@@ -84,14 +91,26 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         }
 
-        private async Task AddToGameListChannelAsync(string game, ICategoryChannel categoryChannel, EmbedBuilder gameInfoEmbed, SlashCommandContext context)
+        private static async Task<ICategoryChannel> CreateCategoryChannelAsync(string categoryName, SlashCommandContext context)
+        {
+            return await context.Guild.CreateCategoryAsync(categoryName);
+        }
+
+        private static async Task<ICategoryChannel> GetCategoryChannelAsync(string categoryName, SlashCommandContext context)
+        {
+            return (await context.Guild.GetChannelsAsync()).OfType<ICategoryChannel>().FirstOrDefault(channel => channel.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private async Task AddToGameListChannelAsync(string game, ICategoryChannel categoryChannel, EmbedBuilder gameInfoEmbed, SlashCommandContext context, ITextChannel gameChannel)
         {
             var gameListChannel = await AddOrGetGameListChannelAsync(categoryChannel, context);
             var builder = new ComponentBuilder()
                 .WithButton("Join", JointButtonId, ButtonStyle.Success)
                 .WithButton("Leave", LeaveButtonId, ButtonStyle.Danger);
 
-            await gameListChannel.SendMessageAsync($"Click to join channel for {game}", embed: gameInfoEmbed?.Build(), components: builder.Build());
+            var usermesage = await gameListChannel.SendMessageAsync($"Click to join channel for {game}", embed: gameInfoEmbed?.Build(), components: builder.Build());
+            _buttonContextDb?.CreateNewButtonContext(usermesage.Id, JointButtonId, gameChannel.Id.ToString());
+            _buttonContextDb?.CreateNewButtonContext(usermesage.Id, LeaveButtonId, gameChannel.Id.ToString());
         }
 
         private EmbedBuilder CreateGameInfoEmbed(GameInfo gameInfo)
@@ -122,7 +141,7 @@ namespace BeeJet.Bot.Commands.Handlers.GameManagement
 
         private async Task<ITextChannel> AddOrGetGameListChannelAsync(ICategoryChannel categoryChannel, SlashCommandContext context)
         {
-            if (!(await categoryChannel.Guild.GetChannelsAsync()).OfType<INestedChannel>().Any(channel => 
+            if (!(await categoryChannel.Guild.GetChannelsAsync()).OfType<INestedChannel>().Any(channel =>
             channel.CategoryId == categoryChannel.Id &&
             channel.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase)))
             {
